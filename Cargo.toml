@@ -1,0 +1,22 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/ketra-core",
+    "crates/ketra-cli",
+    "crates/ketra-md3",
+    "crates/ketra-gui",
+]
+
+[workspace.package]
+version = "1.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["KetraCopy contributors"]
+repository = "https://github.com/maniesh-NR/ketracopy"
+rust-version = "1.75"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true

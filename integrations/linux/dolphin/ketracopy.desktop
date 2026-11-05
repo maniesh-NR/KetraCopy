@@ -1,0 +1,25 @@
+[Desktop Entry]
+Type=Service
+X-KDE-Priority=TopLevel
+X-KDE-Submenu=KetraCopy
+Name=KetraCopy
+Icon=edit-copy
+# Files AND directories; __KETRA_PICK__ is rewritten by
+# integrations/linux/install.sh to ~/.local/bin/ketra-pick
+MimeType=all/allfiles;inode/directory;
+Actions=copy;move;test;
+
+[Desktop Action copy]
+Name=Copy to Folder...
+Icon=edit-copy
+Exec=__KETRA_PICK__ copy %F
+
+[Desktop Action move]
+Name=Move to Folder...
+Icon=edit-cut
+Exec=__KETRA_PICK__ move %F
+
+[Desktop Action test]
+Name=Test (Verify) contents...
+Icon=dialog-information
+Exec=__KETRA_PICK__ test %F

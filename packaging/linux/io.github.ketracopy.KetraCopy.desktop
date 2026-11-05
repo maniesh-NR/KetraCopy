@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=KetraCopy
+GenericName=File Transfer Utility
+Comment=Copy, move and verify files with pause/resume, speed limits and SHA-256 manifests
+Exec=ketracopy-gui %U
+TryExec=ketracopy-gui
+Icon=io.github.ketracopy.KetraCopy
+Terminal=false
+Categories=Utility;FileManager;
+Keywords=copy;move;verify;transfer;resume;
+MimeType=inode/directory;
+StartupNotify=true

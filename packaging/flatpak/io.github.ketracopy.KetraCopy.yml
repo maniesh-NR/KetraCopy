@@ -1,0 +1,73 @@
+# =============================================================================
+# Flatpak manifest for KetraCopy (CLI + GUI).
+# =============================================================================
+#
+# Setup (one-time):
+#   flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+#   flatpak install --user -y runtime/org.freedesktop.Platform//24.08 \
+#                                org.freedesktop.Sdk//24.08 \
+#                                org.freedesktop.Sdk.Extension.rust-stable//24.08
+#
+# Build + install:
+#   flatpak-builder --user --install --force-clean \
+#       dist/flatpak-build packaging/flatpak/io.github.ketracopy.KetraCopy.yml
+#
+# Notes:
+# - The rust toolchain comes from the freedesktop rust-stable SDK extension
+#   (rust-channel: stable) via sdk-extensions + append-path below.
+# - ketra-gui is built when crates/ketra-gui exists (it is being added in
+#   parallel); otherwise a tiny passthrough shim makes the app still launch.
+# - finish-args include --talk-name=org.freedesktop.Flatpak so the HOST file
+#   managers can drive the CLI through `flatpak-spawn --host ketra ...`
+#   (see integrations/linux/install.sh). Without it, the sandboxed GUI can
+#   still access --filesystem=host itself, but cannot spawn host processes.
+# =============================================================================
+id: io.github.ketracopy.KetraCopy
+runtime: org.freedesktop.Platform
+runtime-version: "24.08"
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable//24.08
+command: ketra-gui
+separate-locales: false
+
+finish-args:
+  # A file-transfer tool needs full host filesystem access:
+  - --filesystem=host
+  - --device=dri
+  - --share=ipc
+  - --socket=wayland
+  - --socket=x11
+  # Desktop notifications (transfer finished / paused):
+  - --talk-name=org.freedesktop.Notifications
+  # Host integration: `flatpak-spawn --host ketra ...` from file-manager
+  # actions (integrations/linux/*). See note above.
+  - --talk-name=org.freedesktop.Flatpak
+
+modules:
+  - name: ketracopy
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      env:
+        CARGO_HOME: /run/build/ketracopy/cargo-home
+    build-commands:
+      - cargo build --release -p ketra-cli
+      # ketra-gui crate arrives in parallel; build it when present:
+      - if [ -f crates/ketra-gui/Cargo.toml ]; then cargo build --release -p ketra-gui; fi
+      - install -Dm755 target/release/ketra /app/bin/ketra
+      - |
+        if [ -f target/release/ketracopy-gui ]; then
+          install -Dm755 target/release/ketracopy-gui /app/bin/ketra-gui
+        else
+          # CLI-only fallback so the Flatpak still launches.
+          printf '#!/bin/sh\nexec /app/bin/ketra "$@"\n' > /app/bin/ketra-gui
+          chmod 755 /app/bin/ketra-gui
+        fi
+      - install -Dm644 packaging/linux/io.github.ketracopy.KetraCopy.desktop /app/share/applications/io.github.ketracopy.KetraCopy.desktop
+      - install -Dm644 packaging/linux/io.github.ketracopy.KetraCopy.metainfo.xml /app/share/metainfo/io.github.ketracopy.KetraCopy.metainfo.xml
+      - install -Dm644 packaging/linux/icon.svg /app/share/icons/hicolor/scalable/apps/io.github.ketracopy.KetraCopy.svg
+      - install -Dm644 LICENSE /app/share/licenses/ketracopy/LICENSE
+    sources:
+      - type: dir
+        path: ../..

@@ -1,0 +1,13 @@
+[Nemo Action]
+Active=true
+Name=KetraCopy: Move to Folder...
+Comment=Move the selection with KetraCopy (verified, resumable, SHA-256 manifest)
+; __KETRA_PICK__ is rewritten by integrations/linux/install.sh to
+; ~/.local/bin/ketra-pick
+Exec=__KETRA_PICK__ move %F
+Icon-Name=edit-cut
+; any = offer for single and multi-file selections
+Selection=any
+Extensions=any;
+; Only show when the ketra CLI is reachable:
+Dependencies=ketra;
