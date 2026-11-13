@@ -52,6 +52,13 @@
   project repo is `download/ketracopy/.git` (root = the workspace itself).
 - Local record of the leaked remote history: branch `archive/remote-pre-clean`
   in the OUTER sandbox repo.
+- **PAT rotation — Gate 2 decision (2026-11-13)**: the owner could not be
+  reached mid-session to confirm rotation. Gate 2 proceeded with
+  compensating controls: the refs-level cleanup is complete, and the
+  v1.2.1 release notes publish the SHA-256 of every asset for tamper
+  evidence. **Owner action items (in order): (1) rotate/regenerate the
+  GitHub PAT; (2) optionally ask GitHub Support to purge the dangling
+  pre-clean commits; (3) update this note once done.**
 
 ## Commands (from the workspace root)
 

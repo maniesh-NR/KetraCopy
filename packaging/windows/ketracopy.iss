@@ -1,12 +1,12 @@
 ; =============================================================================
-; KetraCopy 1.2.0 - Inno Setup installer script
+; KetraCopy 1.2.1 - Inno Setup installer script
 ; =============================================================================
 ;
 ; Build:
 ;   ISCC packaging\windows\ketracopy.iss
 ;   (or open this file in the Inno Setup 6 IDE and press Compile)
 ; Output:
-;   dist\windows\KetraCopy-1.2.0-setup.exe
+;   dist\windows\KetraCopy-1.2.1-setup.exe
 ;
 ; What it does:
 ;   - installs ketra.exe (CLI, required) and ketracopy-gui.exe (optional; the

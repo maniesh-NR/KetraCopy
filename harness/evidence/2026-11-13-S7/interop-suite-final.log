@@ -13,7 +13,7 @@
   PASS copy under settings limit exits 0
   PASS settings speed limit held (took 2201ms ≥ 1800ms, burst-adjusted)
   PASS --limit 0 accepted
-  PASS --limit 0 cleared the settings limit (took 36ms < 2500ms)
+  PASS --limit 0 cleared the settings limit (took 34ms < 2500ms)
   PASS copy with use_clone=false exits 0
 
 == S2. verify × manifest × conflicts × filters × flatten ==
@@ -127,8 +127,8 @@
 
 == S12. bench (128 MiB) ==
   PASS bench exits 0
-  PASS bench write throughput: 2435.0 MiB/s
-  PASS bench read throughput: 4350.2 MiB/s
+  PASS bench write throughput: 2422.6 MiB/s
+  PASS bench read throughput: 4251.8 MiB/s
 
 ============ INTEROP SUMMARY ============
   PASS: 105  FAIL: 0

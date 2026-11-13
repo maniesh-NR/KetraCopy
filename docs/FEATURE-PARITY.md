@@ -2,6 +2,14 @@
 
 Statuses: **implemented** (works as described, with code pointer), **partial** (subset of the observable behavior), **different approach** (goal met, mechanism differs), **not implemented** (absent from this snapshot; pointers to reserved placeholders where applicable). Every pointer refers to code that exists in this repository. Parity was derived from public behavior only — see `docs/CLEANROOM.md`.
 
+> **Snapshot note (1.2.1)**: the table below was written at the 1.0.x era
+> and is kept for history. Several rows are stale — the GUI and the OS
+> shell / Explorer / Finder / Linux-file-manager integrations HAVE since
+> shipped (see README.md, SHELL-INTEGRATION.md, `integrations/`,
+> `crates/ketra-cli/src/shell.rs`), verify levels are `off|inline|manifest`
+> and `--retries` defaults to 2 (README cheat sheet). The README cheat
+> sheet and CHANGELOG are the current feature status.
+
 | Feature | TeraCopy 3.17/4.0.5 (public behavior) | KetraCopy status | Where in this repo |
 |---|---|---|---|
 | Copy | Copy files/directories with list + progress | Implemented | `crates/ketra-core/src/plan.rs` (`build_plan`), `pipeline.rs`, `engine.rs`; CLI `ketra copy` (`crates/ketra-cli/src/run_cmd.rs`) |

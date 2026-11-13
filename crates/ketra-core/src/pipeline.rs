@@ -495,15 +495,19 @@ pub fn copy_file(
         // re-verifies content regardless).
         if let Some(j) = journal {
             if pos > last_journaled {
-                // Same durability invariant: sync data before the record.
-                let _ = sync_dst(&dstf, dst);
-                let _ = j.record(&JournalEntry {
-                    rel: rel.to_string(),
-                    size,
-                    chunk: opts.chunk(),
-                    offset: pos,
-                    status: "partial".into(),
-                });
+                // Same durability invariant, and the record may only claim
+                // what was actually synced: on sync failure keep the older
+                // (lower, content-verified) bound instead of recording one
+                // the resume probe could trust over unflushed data.
+                if sync_dst(&dstf, dst).is_ok() {
+                    let _ = j.record(&JournalEntry {
+                        rel: rel.to_string(),
+                        size,
+                        chunk: opts.chunk(),
+                        offset: pos,
+                        status: "partial".into(),
+                    });
+                }
             }
         }
         stats.canceled_at = Some(pos);

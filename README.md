@@ -31,7 +31,7 @@ No TeraCopy code, strings or assets were used — see `docs/CLEANROOM.md`.
 
 | Component | Status |
 |---|---|
-| Engine (`ketra-core`) | Complete — 88 unit tests + 41 integration checks pass on Linux x86-64 |
+| Engine (`ketra-core`) | Complete — 90 unit tests + 41 integration checks pass on Linux x86-64 |
 | CLI (`ketra`) | Complete — 20 unit tests; copy/move/test, manifest/verify, bench, **clip** (clipboard), **shell** (integration), **peers/send/receive** (LAN) |
 | LAN transfer (`ketra-core::lan`) | std-only LocalSend v2 protocol + Ketra accelerated extension (mDNS discovery, HTTP/1.1, parallel ranged streams, end-to-end SHA-256); see `docs/LAN-PROTOCOL.md` |
 | Clipboard / shell integration | Windows `CF_HDROP`+`Preferred DropEffect` (FFI), Linux X11 selection owner (runtime `dlopen`), macOS AppleScript bridge; `ketra shell install` wires context menus + shortcuts per OS — see `SHELL-INTEGRATION.md` |
@@ -162,7 +162,8 @@ crates/ketra-md3     Material Design 3 design system for egui
 crates/ketra-gui     ketracopy-gui binary (eframe)
 integrations/        file-manager integration assets (Linux + Windows)
 packaging/           deb, Inno Setup, Flatpak, macOS .app/DMG, portable bundlers
-scripts/             build-all.sh, test_integration.sh (39 checks)
+scripts/             build-all.sh, test_integration.sh (41 checks),
+                     test_interop.sh (105 checks)
 docs/                ARCHITECTURE, ALGORITHMS, CLEANROOM, LAN-PROTOCOL,
                      ANDROID, BUILD, FEATURE-PARITY
 android/             Kotlin/Compose file manager (JNI over ketra-core)
@@ -170,7 +171,7 @@ android/             Kotlin/Compose file manager (JNI over ketra-core)
 
 ## Verification status
 
-* `cargo test --workspace` — 133 unit tests green (89 core, 20 CLI, 24 MD3)
+* `cargo test --workspace` — 134 unit tests green (90 core, 20 CLI, 24 MD3)
 * `scripts/test_integration.sh` — 41 end-to-end checks green on Linux x86-64
   (bit-rot detection, sparse preservation, resume after SIGINT, speed limit,
   conflict policies, filters, flatten, JSON progress, bench, clipboard
@@ -191,6 +192,9 @@ android/             Kotlin/Compose file manager (JNI over ketra-core)
 * **Android ships as source + CI workflow only** — no APK asset in this
   release (the Gradle build is being re-pointed at the `ketra-core` JNI
   bridge; see `docs/ANDROID.md`).
+* A source file replaced by a symlink between the planning scan and the
+  open is followed (a small local TOCTOU window); plan-time symlinks are
+  skipped. A full fix is on the post-1.2.x roadmap.
 
 ## License and clean-room note
 

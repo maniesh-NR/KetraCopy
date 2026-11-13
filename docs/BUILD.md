@@ -11,7 +11,7 @@
 
 ```sh
 cargo build --release -p ketra-cli     # produces target/release/ketra
-cargo test --workspace                 # 132 unit tests
+cargo test --workspace                 # 134 unit tests
 scripts/test_integration.sh            # 41 end-to-end checks (builds the release binary if needed)
 scripts/test_interop.sh                # feature-interoperability suite (needs Xvfb)
 ```
@@ -75,7 +75,7 @@ cargo build --release -p ketra-cli
 
 - Universal binary: build both `x86_64-apple-darwin` and `aarch64-apple-darwin`, then `lipo -create -output ketra target/x86_64-apple-darwin/release/ketra target/aarch64-apple-darwin/release/ketra`.
 - Ad-hoc codesign for local distribution: `codesign --force --sign - target/release/ketra`.
-- Caveat, verified by reading the code: the macOS capability layer (`crates/ketra-core/src/platform/macos.rs`) implements `clonefile`, `F_NOCACHE`, `F_RDADVISE` and `F_PREALLOCATE`, but `platform/mod.rs` currently dispatches preallocation and readahead advice through `platform/unix.rs`, whose `fallocate`/`posix_fadvise` implementations are Linux-oriented. macOS binaries from this snapshot have never been compiled or executed; expect to wire `macos.rs` into the dispatchers before shipping.
+- The macOS capability layer (`crates/ketra-core/src/platform/macos.rs`) implements `clonefile`, `F_NOCACHE`, `F_RDADVISE` and `F_PREALLOCATE`, and `platform/mod.rs` dispatches to it for all apple targets (including preallocation and readahead advice). macOS release binaries (CLI) are built natively by the CI release workflow; the macOS GUI is deferred in 1.2.x (see README "Known limitations").
 
 ## Cross-compiling from Linux
 

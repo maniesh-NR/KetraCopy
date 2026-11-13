@@ -12,10 +12,10 @@
 | S3 | 1.2.0 — performance / stability / memory optimization pass | done 2026-11-05 | pre-workflow |
 | S4 | Harness workflow + GitHub backup infrastructure (owner mandate 2026-11-13) | done 2026-11-13 | n/a (this stage IS the workflow) |
 | S5 | Full re-verification of 1.2.0 — evidence pack (unit / integration / interop / bench / cross-checks) | done 2026-11-13 — findings handed to Gate 1: macOS-GUI objc2 break on modern rustc + packaging nits (`../evidence/2026-11-13-S5/README.md`) | — |
-| S6 | **Gate 1** — adversarial consensus: work-so-far + roadmap | round 1 FAILED 2026-11-13 (Red Team BLOCK); round 2 combined with Gate 2 after fixes | — |
-| S7 | Address Gate-1 findings; rebuild release artifacts + hash baseline | done 2026-11-13 — all F1–F11 fixed or rescoped with evidence (`../evidence/2026-11-13-S7/README.md`); **new latent bug found + fixed** (`--conflict overwrite`/GUI overwrite-all EEXIST); version **1.2.1**; Windows+macOS binaries moved to native CI builds (single-producer rule) | round 2 pending |
-| S8 | **Gate 2** — release-readiness consensus | combined with Gate-1 round 2 (one panel, both mandates) | pending |
-| S9 | **Release v1.2.1** — tag, GitHub release page with packages for all targets (sandbox Linux/src assets + `release.yml` native Windows/macOS builds), release notes + known limitations, topics | pending | requires S8 PASSED |
+| S6 | **Gate 1** — adversarial consensus: work-so-far + roadmap | round 1 FAILED (Red Team BLOCK); **round 2 PASSED 2026-11-13** (`../reviews/2026-11-13-gate-1-round-2-and-gate-2.md`) | done |
+| S7 | Address Gate-1 findings; rebuild release artifacts + hash baseline | done 2026-11-13 — all findings fixed with evidence; **new latent bug found + fixed** (`--conflict overwrite`/GUI overwrite-all EEXIST); version **1.2.1**; Windows+macOS binaries moved to native CI builds (single-producer rule) | done |
+| S8 | **Gate 2** — release-readiness consensus | **PASSED 2026-11-13** (combined panel; all conditions applied pre-tag — see the round-2 record) | done |
+| S9 | **Release v1.2.1** — tag, GitHub release page with packages for all targets (sandbox Linux/src assets + `release.yml` native Windows/macOS builds), release notes + known limitations + all-asset SHA-256 table, topics | in progress | — |
 
 ## Post-1.2.0 roadmap (candidates, not yet scheduled)
 

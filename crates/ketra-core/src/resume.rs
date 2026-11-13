@@ -228,6 +228,30 @@ mod tests {
         std::fs::remove_dir_all(&dir).ok();
     }
 
+    /// Defense-in-depth (1.2.1): a trusted journal bound whose tail chunk
+    /// matches but whose chunk BELOW differs must not be trusted — the
+    /// probe steps back instead of resuming over corrupt data.
+    #[test]
+    fn test_trusted_bound_with_bad_chunk_below_steps_back() {
+        let dir = tmp("below");
+        let src = dir.join("f.bin");
+        let dst = dir.join("g.bin");
+        let mut data: Vec<u8> = (0..64_000u32).map(|i| (i % 256) as u8).collect();
+        std::fs::write(&src, &data).unwrap();
+        // Tail chunk [57344, 64000) intact; chunk below [49152, 57344)
+        // corrupt — a good tail over bad data below the bound.
+        data[50_000] ^= 0xFF;
+        std::fs::write(&dst, &data).unwrap();
+        let cancel = AtomicBool::new(false);
+
+        let off = probe_resume(&src, &dst, Some(64_000), 8192, &cancel).unwrap();
+        // The bound's tail matches, but the below-chunk check fails, so
+        // the walk continues down to the highest intact chunk boundary.
+        assert_eq!(off, 49_152, "probe must step back below the corrupt chunk");
+
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
     #[test]
     fn test_journal_bounded_probe_stops_early_and_terminates() {
         let dir = tmp("bounded");

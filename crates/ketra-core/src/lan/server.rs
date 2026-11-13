@@ -80,6 +80,10 @@ struct FileSlot {
     path: PathBuf,
     written: AtomicU64,
     done_reported: AtomicBool,
+    /// An upload handler is mid-flight for this slot — guards the
+    /// abandoned-reservation cleanup (expiry/cancel/manifest) against
+    /// deleting a file a live upload is still writing.
+    uploading: AtomicBool,
 }
 
 struct Session {
@@ -276,7 +280,55 @@ pub fn discover(mdns: Option<&Arc<Mdns>>, timeout: Duration) -> Vec<Discovered> 
 // route handlers
 // ---------------------------------------------------------------------------
 
+/// Remove zero-progress reservations of an abandoned session: files that
+/// never received a byte, never completed, and have no live upload. Files
+/// with data (or a legitimately completed empty transfer) are kept.
+fn cleanup_abandoned(sessions: &Session) {
+    for slot in sessions.files.values() {
+        if slot.written.load(Ordering::Relaxed) == 0
+            && !slot.done_reported.load(Ordering::SeqCst)
+            && !slot.uploading.load(Ordering::SeqCst)
+        {
+            let _ = std::fs::remove_file(&slot.path);
+        }
+    }
+}
+
+/// Remove zero-progress reservations of a failed prepare: the session is
+/// never created, so nothing else can ever reference these paths.
+fn unwind_reservations(reserved: &[PathBuf]) {
+    for p in reserved {
+        let _ = std::fs::remove_file(p);
+    }
+}
+
+/// Clear the in-flight marker (the upload ended without completing —
+/// error, reset connection): lets the abandoned-reservation cleanup
+/// reclaim zero-progress slots on expiry/cancel.
+fn clear_uploading(state: &State, sid: &str, fid: &str) {
+    if let Some(slot) = state
+        .sessions
+        .lock()
+        .unwrap()
+        .get(sid)
+        .and_then(|s| s.files.get(fid))
+    {
+        slot.uploading.store(false, Ordering::SeqCst);
+    }
+}
+
 fn purge_expired(sessions: &mut BTreeMap<String, Session>) {
+    // Abandoned reservations: destinations are atomically created at
+    // prepare time, so an expired session must also clean up files that
+    // never received a byte and never completed (a cancelled or crashed
+    // sender). Guarded against in-flight uploads by `uploading`.
+    let expired: Vec<&Session> = sessions
+        .values()
+        .filter(|s| s.created.elapsed() >= Duration::from_secs(30 * 60))
+        .collect();
+    for s in expired {
+        cleanup_abandoned(s);
+    }
     sessions.retain(|_, s| s.created.elapsed() < Duration::from_secs(30 * 60));
 }
 
@@ -320,15 +372,21 @@ fn prepare_upload(state: Arc<State>, req: Request, base: &str, ketra: bool) -> R
     // truncates the first" loss. Abandoned reservations (no bytes, never
     // completed) are cleaned up when the session expires.
     let mut taken: std::collections::HashSet<PathBuf> = std::collections::HashSet::new();
+    let mut reserved: Vec<PathBuf> = Vec::new();
     for f in &prep.files {
         if f.file_name.is_empty() {
+            unwind_reservations(&reserved);
             return Response::text(400, "empty fileName");
         }
         let safe = SECURE_NAME.replace(&f.file_name);
         let path = match reserve_path(&dest_dir, &safe, &mut taken) {
             Ok(p) => p,
-            Err(e) => return Response::text(500, &format!("reserve destination: {e}")),
+            Err(e) => {
+                unwind_reservations(&reserved);
+                return Response::text(500, &format!("reserve destination: {e}"));
+            }
         };
+        reserved.push(path.clone());
         // Preallocate so parallel range writes land inside the final length.
         if ketra && f.size > 0 {
             if let Ok(h) = std::fs::OpenOptions::new().write(true).open(&path) {
@@ -347,6 +405,7 @@ fn prepare_upload(state: Arc<State>, req: Request, base: &str, ketra: bool) -> R
                 path,
                 written: AtomicU64::new(0),
                 done_reported: AtomicBool::new(false),
+                uploading: AtomicBool::new(false),
             },
         );
     }
@@ -381,7 +440,11 @@ fn prepare_upload(state: Arc<State>, req: Request, base: &str, ketra: bool) -> R
 
 fn cancel_session(state: Arc<State>, req: Request) -> Response {
     let sid = req.q("sessionId").unwrap_or_default().to_string();
-    state.sessions.lock().unwrap().remove(&sid);
+    if let Some(sess) = state.sessions.lock().unwrap().remove(&sid) {
+        // The sender cancelled: drop never-written, never-completed
+        // reservations that have no live upload.
+        cleanup_abandoned(&sess);
+    }
     Response::empty(204)
 }
 
@@ -402,13 +465,19 @@ fn upload_v2(state: Arc<State>, req: Request) -> Response {
         if slot.token != token {
             return Response::json(403, "{\"error\":\"bad token\"}");
         }
+        // Mark in-flight so expiry/cancel cleanup cannot unlink the file
+        // under this upload (cleared on completion and error paths).
+        slot.uploading.store(true, Ordering::SeqCst);
         (slot.path.clone(), slot.meta.sha256.clone(), slot.meta.size)
     };
 
     // Stream to disk, hashing every byte on the way through.
     let mut file = match std::fs::File::create(&path) {
         Ok(f) => f,
-        Err(e) => return Response::text(500, &format!("create: {e}")),
+        Err(e) => {
+            clear_uploading(&state, &sid, &fid);
+            return Response::text(500, &format!("create: {e}"));
+        }
     };
     let mut body = req.into_body();
     let mut buf = vec![0u8; 256 * 1024];
@@ -422,9 +491,13 @@ fn upload_v2(state: Arc<State>, req: Request) -> Response {
         let n = match body.read(&mut buf) {
             Ok(0) => break,
             Ok(n) => n,
-            Err(e) => return Response::text(500, &format!("read: {e}")),
+            Err(e) => {
+                clear_uploading(&state, &sid, &fid);
+                return Response::text(500, &format!("read: {e}"));
+            }
         };
         if file.write_all(&buf[..n]).is_err() {
+            clear_uploading(&state, &sid, &fid);
             return Response::text(500, "write failed");
         }
         stream_sha.update(&buf[..n]);
@@ -455,6 +528,7 @@ fn upload_v2(state: Arc<State>, req: Request) -> Response {
             .and_then(|s| s.files.get(&fid))
             .map(|slot| {
                 slot.written.store(written, Ordering::Relaxed);
+                slot.uploading.store(false, Ordering::SeqCst);
                 slot.done_reported
                     .swap(true, Ordering::SeqCst)
             })
@@ -509,6 +583,8 @@ fn upload_ketra_range(state: Arc<State>, req: Request) -> Response {
         if slot.token != token {
             return Response::json(403, "{\"error\":\"bad token\"}");
         }
+        // In-flight marker for the abandoned-reservation cleanup.
+        slot.uploading.store(true, Ordering::SeqCst);
         (
             slot.path.clone(),
             slot.meta.size,
@@ -516,12 +592,16 @@ fn upload_ketra_range(state: Arc<State>, req: Request) -> Response {
         )
     };
     if offset > size {
+        clear_uploading(&state, &sid, &fid);
         return Response::text(400, "offset beyond file size");
     }
 
     let file = match std::fs::OpenOptions::new().write(true).open(&path) {
         Ok(f) => f,
-        Err(e) => return Response::text(500, &format!("open: {e}")),
+        Err(e) => {
+            clear_uploading(&state, &sid, &fid);
+            return Response::text(500, &format!("open: {e}"));
+        }
     };
     let mut body = req.into_body();
     let mut buf = vec![0u8; 256 * 1024];
@@ -530,12 +610,17 @@ fn upload_ketra_range(state: Arc<State>, req: Request) -> Response {
         let n = match body.read(&mut buf) {
             Ok(0) => break,
             Ok(n) => n,
-            Err(e) => return Response::text(500, &format!("read: {e}")),
+            Err(e) => {
+                clear_uploading(&state, &sid, &fid);
+                return Response::text(500, &format!("read: {e}"));
+            }
         };
         if pos + n as u64 > size {
+            clear_uploading(&state, &sid, &fid);
             return Response::text(400, "range overflows file size");
         }
         if let Err(e) = crate::platform::write_at(&file, &buf[..n], pos) {
+            clear_uploading(&state, &sid, &fid);
             return Response::text(500, &format!("write_at: {e}"));
         }
         pos += n as u64;
@@ -549,6 +634,7 @@ fn upload_ketra_range(state: Arc<State>, req: Request) -> Response {
             .get(&sid)
             .and_then(|s| s.files.get(&fid))
             .map(|slot| {
+                slot.uploading.store(false, Ordering::SeqCst);
                 slot.written.fetch_add(pos - offset, Ordering::Relaxed) + (pos - offset)
             })
             .unwrap_or(0)
@@ -593,7 +679,7 @@ fn manifest_check(state: Arc<State>, req: Request) -> Response {
     let (session_id, digests) = parsed;
     let _ = ManifestCheck { session_id: String::new(), digests: BTreeMap::new() }; // type anchor
 
-    let slots: Vec<(String, PathBuf, u64, String)> = {
+    let slots: Vec<(String, PathBuf, u64, String, u64, bool)> = {
         let sessions = state.sessions.lock().unwrap();
         let Some(sess) = sessions.get(&session_id) else {
             return Response::text(404, "unknown session");
@@ -603,18 +689,30 @@ fn manifest_check(state: Arc<State>, req: Request) -> Response {
         }
         sess.files
             .iter()
-            .map(|(k, v)| (k.clone(), v.path.clone(), v.meta.size, v.meta.file_name.clone()))
+            .map(|(k, v)| {
+                (
+                    k.clone(),
+                    v.path.clone(),
+                    v.meta.size,
+                    v.meta.file_name.clone(),
+                    v.written.load(Ordering::Relaxed),
+                    v.done_reported.load(Ordering::SeqCst),
+                )
+            })
             .collect()
     };
 
     let cancel = AtomicBool::new(false);
     let mut verdict = ManifestVerdict::default();
-    for (fid, path, size, name) in &slots {
+    for (fid, path, size, name, written, done) in &slots {
         let Some(expected) = digests.get(fid) else {
-            // No digest for a reserved slot and the session is being
-            // closed: remove the orphaned (never confirmed) reservation
-            // instead of littering the inbox.
-            let _ = std::fs::remove_file(path);
+            // Digest missing AND the slot never received a byte (still our
+            // reservation) while the session is being closed: remove the
+            // orphaned reservation. A file that DID receive bytes is kept —
+            // data preservation beats inbox tidiness.
+            if *written == 0 && !*done {
+                let _ = std::fs::remove_file(path);
+            }
             verdict.results.insert(fid.clone(), "missing".into());
             continue;
         };

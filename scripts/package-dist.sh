@@ -49,51 +49,16 @@ for f in "${DOCS[@]}"; do cp "$ROOT/$f" "$STAGE/"; done
 tar -czf "$DIST/ketracopy-${VERSION}-linux-x86_64.tar.gz" -C "$DIST" "ketracopy-${VERSION}-linux-x86_64"
 rm -rf "$STAGE"
 
-echo "==> 3. windows zips (x86_64 + i686, CLI + GUI)"
-for arch in x86_64 i686; do
-    triple="${arch}-pc-windows-gnu"
-    exe_dir="target/${triple}/release"
-    [ -x "$exe_dir/ketra.exe" ] || { echo "   skip ${arch} (no ketra.exe)"; continue; }
-    stage="$DIST/ketracopy-${VERSION}-windows-${arch}"
-    rm -rf "$stage"; mkdir -p "$stage"
-    install -m 755 "$exe_dir/ketra.exe" "$stage/ketra.exe"
-    [ -x "$exe_dir/ketracopy-gui.exe" ] && install -m 755 "$exe_dir/ketracopy-gui.exe" "$stage/ketracopy-gui.exe" || true
-    for f in "${DOCS[@]}"; do cp "$ROOT/$f" "$stage/"; done
-    (cd "$DIST" && python3 -m zipfile -c "ketracopy-${VERSION}-windows-${arch}.zip" "ketracopy-${VERSION}-windows-${arch}")
-    rm -rf "$stage"
-done
-
-echo "==> 4. macos tar.gz (CLI-only; GUI requires an Apple SDK/Xcode build)"
-cat > "$DIST/README-macos.txt" <<'EOF'
-KetraCopy for macOS — command-line build
-========================================
-
-This archive contains the `ketra` CLI, cross-compiled for Apple Silicon
-(aarch64) or Intel (x86_64) Macs. It includes the full engine: copy/move
-with inline & manifest verification, resume journals, sparse handling,
-LAN transfer (`ketra peers | send | receive`) and clipboard integration
-(`ketra clip put|get|paste` via AppleScript).
-
-The Material-3 GUI (`ketracopy-gui`) is NOT included: it links AppKit /
-OpenGL frameworks and must be built on a Mac with Xcode installed:
-
-    git clone <repo> && cd ketracopy
-    cargo build --release        # then run target/release/ketracopy-gui
-
-First run on macOS may require right-click > Open (unsigned binary).
-EOF
-for arch in aarch64 x86_64; do
-    exe="target/${arch}-apple-darwin/release/ketra"
-    [ -f "$exe" ] || { echo "   skip ${arch} (no binary)"; continue; }
-    stage="$DIST/ketracopy-${VERSION}-macos-${arch}"
-    rm -rf "$stage"; mkdir -p "$stage"
-    install -m 755 "$exe" "$stage/ketra"
-    cp "$DIST/README-macos.txt" "$stage/README-macos.txt"
-    for f in LICENSE ATTRIBUTIONS.md SHELL-INTEGRATION.md; do cp "$ROOT/$f" "$stage/"; done
-    tar -czf "$DIST/ketracopy-${VERSION}-macos-${arch}.tar.gz" -C "$DIST" "ketracopy-${VERSION}-macos-${arch}"
-    rm -rf "$stage"
-done
-rm -f "$DIST/README-macos.txt"
+echo "==> 3./4. windows zips + macos tar.gz — NOT built here (single-producer rule)"
+cat <<'NOTE'
+Single-producer rule (Gate 1 / Gate 2): every release asset has exactly
+ONE producer. Windows (.zip, msvc x86_64 + i686, CLI + GUI) and macOS
+(.tar.gz, CLI, x86_64 + aarch64) release binaries are built NATIVELY by
+the CI release workflow (.github/workflows/release.yml). Packaging them
+here from any cross binaries found in target/ is deliberately disabled —
+same-named assets would collide with the CI outputs and break the
+hash-baselined release page (harness/state/artifact-hashes.md).
+NOTE
 
 echo "==> 5. source archives"
 src_stage="$DIST/ketracopy-${VERSION}-src"

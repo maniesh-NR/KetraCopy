@@ -59,11 +59,13 @@ Every technique below is actually implemented in this repository; each entry sta
 
 ## Block-based resume
 
-**What we do.** For an interrupted copy, `resume.rs::find_resume_offset` finds the first divergent 1 MiB block between source and destination: it anchors on the first block, then binary-searches block-aligned positions ("block at m is equal" is monotone under the prefix invariant), then runs a short linear scan for the exact boundary; the engine truncates the result to 4096 alignment and bounds the probe by the journal's recorded written length. Each probe byte-compares both files directly — at these block sizes that is stronger than a rolling-checksum probe.
+**What we do.** For an interrupted copy, `resume.rs::probe_resume` walks chunk-aligned positions backwards from the highest trustworthy bound — the journal's last recorded offset (see the durability invariant below) or the destination length. At each position it byte-compares one full chunk of source and destination; with a journal bound it additionally verifies the chunk directly *below* the accepted boundary (defense-in-depth against journal or disk corruption), and the first boundary whose checks all pass wins. Without a journal it scans every chunk and resumes from the lowest differing boundary. Each probe byte-compares both files directly — at these chunk sizes that is stronger than a rolling-checksum probe.
+
+**Durability invariant (since 1.2.1).** The pipeline flushes the destination (Linux `fdatasync`, elsewhere `fsync`) *before* appending any batched `partial` journal record (32 MiB stride, first-chunk anchor, cancel anchor). A recoverable bound therefore implies every byte below it is already on the media; the probe's chunk checks guard against journal/disk corruption rather than unflushed data.
 
 **Honesty note.** This is prefix probing, valid for interrupted sequential copies. It is *not* the full rsync delta-matching algorithm: KetraCopy never recomputes differing middle blocks of a changed file; if the prefix invariant does not hold (destination diverges early), the probe returns a small offset and the rest of the file is simply recopied.
 
-**Where.** `crates/ketra-core/src/resume.rs` (`find_resume_offset`: anchor check, binary search over block-aligned positions, linear finish); journal in `journal.rs`; engine wiring and journal-bounded limit in `engine.rs::run`.
+**Where.** `crates/ketra-core/src/resume.rs` (`probe_resume`: trusted backward walk with below-bound verification, untrusted full scan); journal in `journal.rs`; engine wiring and journal-bounded limit in `engine.rs::run`; sync-before-record in `pipeline.rs` (`sync_dst`).
 
 **Citation.** A. Tridgell and P. Mackerras, "The rsync algorithm", ANU Technical Report TR-CS-0606, 1996. Verified on Linux x86-64: integration test 7 interrupts a copy with SIGINT, then completes via the journal and `diff -r` confirms a byte-identical tree; unit test `finds_divergence_point` probes a boundary at a non-block-aligned offset.
 

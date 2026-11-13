@@ -68,12 +68,12 @@ from a fresh clone.
 
 ### Verification
 
-* 133 unit tests (129 + 4 new regression tests: LAN reserve/collision,
-source shrink, huge Content-Length, overwrite fall-through), 41
-integration checks (39 + 2), interop suite 105/105 on Linux x86-64 (the
-Windows/macOS cross-binary packages are produced natively by the CI
-release workflow — single-producer rule — and are explicitly skipped in
-the sandbox run). Evidence: `harness/evidence/2026-11-13-S7/`.
+* 134 unit tests (129 + 5 new regression tests: LAN reserve/collision,
+source shrink, huge Content-Length, overwrite fall-through, trusted-bound
+probe step-back), 41 integration checks (39 + 2), interop suite 105/105
+on Linux x86-64 (the Windows/macOS cross-binary packages are produced
+natively by the CI release workflow — single-producer rule — and are
+explicitly skipped in the sandbox run). Evidence: `harness/evidence/`.
 
 ## 1.2.0 — 2026-11-05
 
