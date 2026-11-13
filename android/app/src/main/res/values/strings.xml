@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">KetraCopy</string>
+    <string name="tab_files">Files</string>
+    <string name="tab_lan">LAN</string>
+    <string name="tab_cloud">Cloud</string>
+    <string name="tab_settings">Settings</string>
+    <string name="receiver_running">Receiver running on :%1$d</string>
+    <string name="receiver_stopped">Receiver stopped</string>
+    <string name="send">Send</string>
+    <string name="receive">Receive</string>
+    <string name="peers_found">%1$d peer(s) on the LAN</string>
+    <string name="no_peers">No peers found</string>
+    <string name="transfer_complete">%1$d ok, %2$d failed (%3$s)</string>
+    <string name="verify_ok">Verified (SHA-256 matches)</string>
+    <string name="verify_failed">Verification FAILED</string>
+    <string name="compress">Compress (ZIP)</string>
+    <string name="extract">Extract</string>
+    <string name="add_provider">Add provider</string>
+    <string name="webdav">WebDAV</string>
+    <string name="smb">SMB</string>
+    <string name="google_drive">Google Drive</string>
+    <string name="fingerprint">Fingerprint</string>
+    <string name="alias">Alias</string>
+    <string name="channel_transfer">Transfer</string>
+    <string name="channel_transfer_desc">File transfer progress and status</string>
+</resources>

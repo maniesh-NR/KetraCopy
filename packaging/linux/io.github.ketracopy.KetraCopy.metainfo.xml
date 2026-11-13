@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- AppStream metadata for KetraCopy (shared by the .deb and the Flatpak). -->
+<component type="desktop-application">
+  <id>io.github.ketracopy.KetraCopy</id>
+  <name>KetraCopy</name>
+  <summary>Verified file copy/move with pause, resume and speed limits</summary>
+  <description>
+    <p>
+      KetraCopy copies and moves files with byte-level verification
+      (inline or full SHA-256), pause/resume journals, speed limits,
+      conflict policies, include/exclude filters and SHA-256 manifests
+      for later re-verification.
+    </p>
+    <p>
+      The package ships the ketra command line tool (ketra) and the
+      KetraCopy desktop application (ketra-gui).
+    </p>
+  </description>
+  <developer_name>KetraCopy contributors</developer_name>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <url type="homepage">https://example.invalid/ketracopy</url>
+  <launchable type="desktop-id">io.github.ketracopy.KetraCopy.desktop</launchable>
+  <provides>
+    <binary>ketra</binary>
+    <binary>ketra-gui</binary>
+  </provides>
+  <releases>
+    <release version="1.2.0" date="2026-01-01">
+      <description>
+        <p>Initial release.</p>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

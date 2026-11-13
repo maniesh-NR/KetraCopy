@@ -1,0 +1,18 @@
+[package]
+name = "ketra-gui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "KetraCopy Material Design 3 GUI shell."
+
+[[bin]]
+name = "ketracopy-gui"
+path = "src/main.rs"
+
+[dependencies]
+ketra-core = { path = "../ketra-core" }
+ketra-md3 = { path = "../ketra-md3" }
+eframe = { version = "0.28", default-features = false, features = ["glow", "wayland", "x11"] }
+egui = "=0.28.1"

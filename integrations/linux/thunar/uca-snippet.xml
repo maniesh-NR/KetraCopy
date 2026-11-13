@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Thunar Custom Actions snippet for KetraCopy.
+
+  Thunar stores custom actions in ~/.config/Thunar/uca.xml. Because blindly
+  rewriting that file can destroy user actions, integrations/linux/install.sh
+  MERGES the <action> blocks below into the existing uca.xml with python3
+  (making a .bak backup first). If python3 is unavailable, the installer
+  prints manual instructions instead of touching the file.
+
+  __KETRA_PICK__ is replaced with the absolute path of the ketra-pick
+  wrapper (~/.local/bin/ketra-pick) during the merge.
+-->
+<actions>
+  <action>
+    <icon>edit-copy</icon>
+    <name>KetraCopy: Copy to Folder...</name>
+    <unique-id>ketracopy-copy-1700000000000000-1</unique-id>
+    <command>__KETRA_PICK__ copy %F</command>
+    <description>Copy the selection with KetraCopy (verified, resumable, SHA-256 manifest)</description>
+    <patterns>*</patterns>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
+  </action>
+  <action>
+    <icon>edit-cut</icon>
+    <name>KetraCopy: Move to Folder...</name>
+    <unique-id>ketracopy-move-1700000000000000-2</unique-id>
+    <command>__KETRA_PICK__ move %F</command>
+    <description>Move the selection with KetraCopy (verified, resumable, SHA-256 manifest)</description>
+    <patterns>*</patterns>
+    <directories/>
+    <audio-files/>
+    <image-files/>
+    <other-files/>
+    <text-files/>
+    <video-files/>
+  </action>
+</actions>

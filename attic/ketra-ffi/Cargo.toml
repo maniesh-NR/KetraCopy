@@ -1,0 +1,17 @@
+[package]
+name = "ketra-ffi"
+description = "UniFFI bindings exposing ketra-core + ketra-net to Kotlin (Android)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "ketraffi"
+
+[dependencies]
+ketra-core = { workspace = true }
+ketra-net = { workspace = true }
+uniffi = { workspace = true, features = ["cli"] }

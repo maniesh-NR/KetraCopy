@@ -1,0 +1,15 @@
+[package]
+name = "ketra-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "KetraCopy command line: copy/move/test/manifest/verify/bench plus LAN send/receive (LocalSend-compatible)."
+
+[[bin]]
+name = "ketra"
+path = "src/main.rs"
+
+[dependencies]
+ketra-core = { path = "../ketra-core" }

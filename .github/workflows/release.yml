@@ -1,0 +1,58 @@
+# Builds native release binaries for every desktop target and attaches
+# them to the GitHub release for the pushed v* tag.
+#
+# Sandbox-produced assets (Linux .deb, portable, cross-built Windows zips)
+# are attached at release creation time; this workflow adds the natively
+# built Windows/macOS artifacts on top (same-name assets are skipped).
+
+name: release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-22.04,   target: x86_64-unknown-linux-gnu,  name: linux-x86_64 }
+          - { os: windows-latest, target: x86_64-pc-windows-msvc,    name: windows-x86_64 }
+          - { os: windows-latest, target: i686-pc-windows-msvc,      name: windows-i686 }
+          - { os: macos-13,       target: x86_64-apple-darwin,       name: macos-x86_64 }
+          - { os: macos-latest,   target: aarch64-apple-darwin,      name: macos-aarch64 }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Build (CLI + GUI)
+        shell: bash
+        run: |
+          cargo build --release --workspace --target ${{ matrix.target }}
+          echo "BIN_DIR=target/${{ matrix.target }}/release" >> "$GITHUB_ENV"
+      - name: Package
+        shell: bash
+        run: |
+          VER=$(cargo metadata --no-deps --format-version 1 | python3 -c "import json,sys; print(json.load(sys.stdin)['packages'][0]['version'])")
+          OUT="ketracopy-${VER}-${{ matrix.name }}"
+          mkdir -p "$OUT"
+          if [ -f "$BIN_DIR/ketra" ];       then cp "$BIN_DIR/ketra" "$OUT/"; fi
+          if [ -f "$BIN_DIR/ketra.exe" ];   then cp "$BIN_DIR/ketra.exe" "$OUT/"; fi
+          if [ -f "$BIN_DIR/ketracopy-gui" ]; then cp "$BIN_DIR/ketracopy-gui" "$OUT/"; fi
+          if [ -f "$BIN_DIR/ketracopy-gui.exe" ]; then cp "$BIN_DIR/ketracopy-gui.exe" "$OUT/"; fi
+          cp README.md LICENSE ATTRIBUTIONS.md SHELL-INTEGRATION.md "$OUT/"
+          if [[ "$OUT" == *windows* ]]; then
+            7z a "${OUT}.zip" "$OUT" >/dev/null
+          else
+            tar czf "${OUT}.tar.gz" "$OUT"
+          fi
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ketracopy-*.tar.gz
+            ketracopy-*.zip

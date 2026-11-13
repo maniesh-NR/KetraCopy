@@ -1,0 +1,15 @@
+[package]
+name = "ketra-net"
+description = "Local-network file transfer for KetraCopy: LocalSend v2 protocol + Ketra accelerated extension (mDNS discovery, HTTPS, integrity-checked transfer)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+ketra-core = { workspace = true }
+rustls = { workspace = true }
+rustls-pemfile = { workspace = true }
+mdns-sd = { workspace = true }
+rcgen = { workspace = true }

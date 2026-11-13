@@ -1,0 +1,19 @@
+# Build outputs
+/target/
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/local.properties
+
+# Release artifacts (built by scripts/package-dist.sh; shipped via GitHub Releases)
+/dist/
+/KetraCopy-portable/
+
+# Session / tooling junk
+/tool-results/
+/.clawhub/
+*.state
+
+# Editors / OS
+*.swp
+.DS_Store

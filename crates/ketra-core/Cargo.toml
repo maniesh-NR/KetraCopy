@@ -1,0 +1,10 @@
+[package]
+name = "ketra-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "KetraCopy engine core: scan, copy, verify, resume, throttle. std-only, zero external dependencies."
+
+[lib]
+name = "ketra_core"
+path = "src/lib.rs"
