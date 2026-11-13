@@ -1,5 +1,80 @@
 # Changelog
 
+## 1.2.1 — 2026-11-13
+
+### Adversarial-gate fixes (Gate 1 — harness/reviews/)
+
+KetraCopy 1.2.0 passed the project's first adversarial consensus review
+with one BLOCK verdict (LAN data loss) and four major findings; all are
+fixed here, each with a regression test:
+
+* **LAN receiver filename collision could silently destroy the first of two
+colliding uploads** (CRITICAL): destinations are now *reserved* at prepare
+time by atomically creating each file (`O_EXCL`), deduplicated within the
+session and across concurrent sessions — a second file with the same name
+(duplicate, or after sanitization: `a:b.txt` + `a_b.txt`) lands at
+`name (2)`, never on top of the first. Abandoned zero-byte reservations are
+cleaned up when a session expires.
+* **A source that shrank mid-copy was zero-padded to its planned size and
+journaled `done`** — silent corruption. The copy now fails loudly
+(`Error::Shrank`) and keeps the partial + journal for `--resume`.
+* **`--no-times` re-copies silently skipped same-size modified files** (the
+fast scan degenerated to size-only). Without mtime preservation a size
+match alone never shortcuts a copy; everything falls through to the
+conflict policy.
+* **A hostile `Content-Length` response header could abort the sender**
+(unbounded pre-allocation). Client-side response bodies are capped at
+8 MiB and rejected cleanly.
+* **Resume-journal durability gap**: a batched `partial` record could become
+durable while the data below the bound was not (power loss → resume trusts
+the bound → silent zero-tail). The destination is now synced before every
+journal record — any recoverable bound implies all bytes below it are on
+the media — and `probe_resume` additionally verifies the chunk below a
+trusted bound before trusting it.
+* **`--conflict overwrite` (and the GUI's overwrite-all) failed with
+`File exists` on existing destinations** — the reflink fast path opens
+with `create_new` ("destination must not exist") and EEXISTed instead of
+falling through to the streaming path. Found while fixing the `--no-times`
+defect above, whose size-only skip used to mask it; the EEXIST now falls
+through to the truncating streaming copy (regression-tested both at unit
+level and end-to-end).
+* Received-file names now prefix Windows reserved device names (`CON`,
+`COM1`…) so LAN-received archives stay extractable on FAT/NTFS; the
+generated `ketra-paste-smart` script rejects window titles containing `..`
+or absolute paths; `manifest_check` removes never-confirmed reservations.
+
+### Docs / CI honesty pass
+
+* README, `docs/LAN-PROTOCOL.md`, `docs/ARCHITECTURE.md`, `docs/BUILD.md`
+and `docs/ANDROID.md` no longer describe the attic HTTPS/rustls prototype
+as shipped: the 1.2.x LAN transport is plain HTTP/1.1 (official LocalSend
+apps interoperate after the planned TLS transport); the macOS GUI is
+deferred (the pinned egui 0.28 stack does not compile against
+rustc >= 1.100 on macOS); Android is source/CI-track only.
+* `release.yml` builds the Windows (msvc, CLI + GUI) and macOS (CLI, both
+darwin targets) release binaries natively and is runnable via
+`workflow_dispatch`; every release asset now has exactly one producer
+(sandbox: Linux + src; CI: Windows + macOS) so hash-baselined artifacts
+cannot be silently overwritten. The sandbox zigbuild cross-compile was
+attempted and abandoned (zig's linker rejects rustc's mingw link line —
+evidence in `harness/evidence/2026-11-13-S7/`); CI-native builds replace
+it.
+* `build-apk.yml` is dispatch-only until the Android Gradle build is
+re-pointed at the `ketra-core` JNI bridge (post-1.2.x roadmap).
+* Packaging metadata: real GitHub URLs replace the `example.invalid`
+placeholders (deb control + copyright, Inno Setup, metainfo); a tracked
+`packaging/dist-README.txt` template makes `package-dist.sh` reproducible
+from a fresh clone.
+
+### Verification
+
+* 133 unit tests (129 + 4 new regression tests: LAN reserve/collision,
+source shrink, huge Content-Length, overwrite fall-through), 41
+integration checks (39 + 2), interop suite 105/105 on Linux x86-64 (the
+Windows/macOS cross-binary packages are produced natively by the CI
+release workflow — single-producer rule — and are explicitly skipped in
+the sandbox run). Evidence: `harness/evidence/2026-11-13-S7/`.
+
 ## 1.2.0 — 2026-11-05
 
 ### Performance / stability / memory optimization release
@@ -130,7 +205,7 @@ the deltas below exceed that noise):
 ### Docs
 
 * README: 1.2.0 release summary, CLI cheat sheet documents `--parallel`
-  and `--retries`; verification status updated (127 unit tests).
+  and `--retries`; verification status updated (129 unit tests).
 
 ## 1.1.1 — 2026-11-05
 

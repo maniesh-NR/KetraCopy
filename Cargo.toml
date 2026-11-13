@@ -8,11 +8,11 @@ members = [
 ]
 
 [workspace.package]
-version = "1.2.0"
+version = "1.2.1"
 edition = "2021"
 license = "MIT"
 authors = ["KetraCopy contributors"]
-repository = "https://github.com/maniesh-NR/ketracopy"
+repository = "https://github.com/maniesh-NR/KetraCopy"
 rust-version = "1.75"
 
 [profile.release]

@@ -6,7 +6,13 @@ integration** (Explorer / Finder / Nemo / Nautilus / Caja / Dolphin /
 Thunar) and a **Material Design 3 GUI**. The engine and CLI are
 zero-external-dependency Rust crates; the GUI uses only `egui`/`eframe`.
 
-Version 1.2.0 is a **performance / stability / memory optimization release**:
+Repository: <https://github.com/maniesh-NR/KetraCopy> — MIT licensed.
+
+Version 1.2.1 is a **correctness-first release** — the fixes from the
+project's first adversarial review (LAN filename-collision data loss, loud
+failure on mid-copy source shrink, no size-only skips under `--no-times`,
+hostile `Content-Length` handling, durable resume journals) — on top of the
+1.2.0 **performance / stability / memory optimization** pass:
 streaming XXH64 & CRC32C (O(1) memory — hashing no longer holds the file in
 RAM), inline verification without the extra source re-read, inline SHA-256
 manifest hashing (`--verify manifest` reads each byte exactly once — no
@@ -25,13 +31,13 @@ No TeraCopy code, strings or assets were used — see `docs/CLEANROOM.md`.
 
 | Component | Status |
 |---|---|
-| Engine (`ketra-core`) | Complete — 85 unit tests + 39 integration checks pass on Linux x86-64 |
+| Engine (`ketra-core`) | Complete — 88 unit tests + 41 integration checks pass on Linux x86-64 |
 | CLI (`ketra`) | Complete — 20 unit tests; copy/move/test, manifest/verify, bench, **clip** (clipboard), **shell** (integration), **peers/send/receive** (LAN) |
 | LAN transfer (`ketra-core::lan`) | std-only LocalSend v2 protocol + Ketra accelerated extension (mDNS discovery, HTTP/1.1, parallel ranged streams, end-to-end SHA-256); see `docs/LAN-PROTOCOL.md` |
 | Clipboard / shell integration | Windows `CF_HDROP`+`Preferred DropEffect` (FFI), Linux X11 selection owner (runtime `dlopen`), macOS AppleScript bridge; `ketra shell install` wires context menus + shortcuts per OS — see `SHELL-INTEGRATION.md` |
 | GUI (`ketra-md3` 24 tests, `ketra-gui`) | eframe 0.28 / glow, MD3 components; Transfer / LAN / Settings / About tabs; built for Linux + Windows x64/x86 |
-| Windows binaries | Built (x86-64 + i686, windows-gnu toolchain); not runtime-tested in this environment |
-| macOS | Type-checks clean for x86-64 + aarch64; binaries are built by the GitHub Actions release workflow (no Apple SDK in the dev sandbox) |
+| Windows binaries | Release binaries built natively by the GitHub Actions release workflow (msvc, x86-64 + i686, CLI + GUI); not runtime-tested in this environment |
+| macOS | CLI type-checks clean for x86-64 + aarch64; CLI release binaries are built natively by the GitHub Actions release workflow (GUI deferred — see Known limitations; no Apple SDK in the dev sandbox) |
 | Packaging | deb, portable Linux bundle, per-target archives, Inno Setup script, Flatpak manifest, macOS .app/DMG scripts |
 
 ## Quick start
@@ -126,14 +132,17 @@ so native copy/cut keeps working while paste is accelerated and verified.
 
 Full details, formats and manual installs: **`SHELL-INTEGRATION.md`**.
 
-## LAN transfer (LocalSend compatible)
+## LAN transfer (LocalSend-compatible API surface)
 
 `ketra receive` announces via mDNS (`_localsend._tcp.local` +
-`_ketra._tcp.local`) and accepts uploads on port 53317 from official
-LocalSend clients; Ketra peers additionally get parallel ranged streams and
-end-to-end SHA-256 manifests. `ketra send` discovers peers and sends.
-Plain HTTP/1.1 on trusted LANs (as LocalSend does), hardened with digest
-verification — see `docs/LAN-PROTOCOL.md` and `docs/ARCHITECTURE.md`.
+`_ketra._tcp.local`) and accepts uploads on port 53317 from KetraCopy peers
+and plain-HTTP clients (`curl`, scripts); Ketra peers additionally get
+parallel ranged streams and end-to-end SHA-256 manifests. `ketra send`
+discovers peers and sends. The transport is **plain HTTP/1.1 on trusted
+LANs**, hardened with digest verification — the same REST surface as
+LocalSend v2, but official LocalSend apps speak HTTPS-only and will not
+connect until the planned TLS transport lands (`attic/ketra-net` keeps the
+prepared rustls design). See `docs/LAN-PROTOCOL.md`.
 
 ## Android track
 
@@ -161,14 +170,27 @@ android/             Kotlin/Compose file manager (JNI over ketra-core)
 
 ## Verification status
 
-* `cargo test --workspace` — 129 unit tests green (85 core, 20 CLI, 24 MD3)
-* `scripts/test_integration.sh` — 39 end-to-end checks green on Linux x86-64
+* `cargo test --workspace` — 133 unit tests green (89 core, 20 CLI, 24 MD3)
+* `scripts/test_integration.sh` — 41 end-to-end checks green on Linux x86-64
   (bit-rot detection, sparse preservation, resume after SIGINT, speed limit,
   conflict policies, filters, flatten, JSON progress, bench, clipboard
   graceful degradation, manifest round-trip)
-* Windows x86-64/i686 binaries cross-built and smoke-linked; runtime
-  behaviour shares the cfg-gated engine paths exercised on Linux
-* macOS targets type-check; release binaries come from GitHub Actions
+* Windows x86-64/i686 targets compile clean (`cargo check --workspace`);
+  release binaries are built natively by GitHub Actions (msvc)
+* macOS CLI targets type-check for both architectures; CLI release binaries
+  come from GitHub Actions (GUI deferred)
+
+## Known limitations (1.2.1)
+
+* **macOS GUI is deferred**: the pinned egui 0.28 stack (via `objc2 0.4.1`)
+  does not compile against rustc >= 1.100 on macOS; the CLI ships for both
+  x86-64 and aarch64, and the GUI returns with a GUI-stack refresh.
+* **LAN transport is plain HTTP/1.1** — Ketra-to-Ketra and curl-friendly;
+  official LocalSend apps (HTTPS-only) interoperate only after the planned
+  TLS transport lands.
+* **Android ships as source + CI workflow only** — no APK asset in this
+  release (the Gradle build is being re-pointed at the `ketra-core` JNI
+  bridge; see `docs/ANDROID.md`).
 
 ## License and clean-room note
 

@@ -5,7 +5,7 @@
 # Produces:
 #   KetraCopy-portable/                        (self-contained folder)
 #     ketra, ketracopy-gui (if built), LICENSE, portable.flag, README-portable.txt
-#   dist/ketracopy-1.2.0-portable-linux-<arch>.tar.gz
+#   dist/ketracopy-1.2.1-portable-linux-<arch>.tar.gz
 #
 # The empty file "portable.flag" next to the ketra binary switches the engine
 # into portable mode: settings are read/written as ketra.json next to the
@@ -16,7 +16,7 @@
 # =============================================================================
 set -euo pipefail
 
-VERSION="1.2.0"
+VERSION="1.2.1"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 OUT="$ROOT/KetraCopy-portable"

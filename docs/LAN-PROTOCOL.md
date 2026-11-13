@@ -1,15 +1,19 @@
 # KetraCopy LAN Protocol
 
 Wire-format specification for the LAN transfer feature implemented in
-`crates/ketra-net`. The protocol is JSON over HTTPS, designed to be
-wire-compatible with the open **LocalSend v2** protocol while adding a
-Ketra-specific accelerated extension that engages only when both endpoints
-are KetraCopy.
+`crates/ketra-core/src/lan`. The protocol is JSON over **HTTP/1.1** on the
+canonical LocalSend port, designed to be API-compatible with the open
+**LocalSend v2** protocol while adding a Ketra-specific accelerated
+extension that engages only when both endpoints are KetraCopy. (HTTPS —
+required by the official LocalSend apps — is a planned transport upgrade;
+see "TLS (planned)" below.)
 
 ## Overview
 
-KetraCopy speaks LocalSend v2 by default: it interoperates with the real
-LocalSend apps (mobile and desktop) without any special configuration. When
+KetraCopy speaks the LocalSend v2 REST surface over plain HTTP/1.1:
+Ketra-to-Ketra and plain-HTTP clients (`curl`, scripts) work out of the
+box; official LocalSend apps require HTTPS and will interoperate once the
+planned TLS transport lands. When
 two KetraCopy peers discover each other, they negotiate a **Ketra accelerated
 extension** that adds:
 
@@ -40,8 +44,8 @@ TXT record fields:
 | `version` | integer | yes | LocalSend protocol version. Always `2`. |
 | `deviceModel` | string | no | Free-form model string ("Pixel 8", "ThinkPad T14"). |
 | `deviceType` | string | yes | One of `mobile`, `desktop`, `web`, `server`, `headless`. |
-| `fingerprint` | string | yes | Hex SHA-256 of the cert's SubjectPublicKeyInfo (see TLS). |
-| `port` | integer | yes | HTTPS port the receiver listens on. Default `53317`. |
+| `fingerprint` | string | yes | Device fingerprint / identity hash (see TLS (planned) for the cert-based design). |
+| `port` | integer | yes | Port the receiver listens on. Default `53317`. |
 | `download` | string | no | `"true"` if the device accepts incoming files. Default `"true"`. |
 | `ketra` | string | no | `"1"` if the peer supports the Ketra accelerated extension, `"0"` otherwise. Absent = `0`. |
 
@@ -54,7 +58,7 @@ KetraCopy advertises `ketra=1` only when it is willing to accept accelerated
 transfers; the field is omitted (or `"0"`) when the user has disabled the
 extension in settings.
 
-## Implementation status (1.2.0)
+## Implementation status (1.2.1)
 
 Ketra-to-Ketra transfers, discovery, and the REST endpoints in this
 document are fully implemented and exercised end-to-end (loopback:
@@ -67,7 +71,10 @@ design). Tools that expect HTTPS (a real LocalSend peer) will not
 connect to a 1.1.x receiver yet; `curl` works with
 `http://127.0.0.1:53317/api/localsend/v2/info`.
 
-## TLS
+## TLS (planned — `attic/ketra-net` prototype design; NOT shipped in 1.2.x)
+
+Everything from this section down describes the prepared TLS design; none
+of it is in the shipped 1.2.x receiver (plain HTTP/1.1 above).
 
 All LAN traffic is HTTPS (HTTP/1.1 over TLS 1.2 or 1.3) on port 53317. The
 TLS stack is **rustls** (no OpenSSL, no platform native trust store); the
@@ -97,13 +104,15 @@ fingerprint = lower( hex( SHA-256( SubjectPublicKeyInfo ) ) )
 Optional AES-256-GCM PIN encryption of the payload (LocalSend's
 `/prepare-upload` carries a `pin` field) is **not yet implemented**; the
 field is parsed if present but ignored. Tracked as a TODO in
-`crates/ketra-net/src/server.rs`.
+`attic/ketra-net/src/server.rs` (prototype).
 
 ## REST endpoints
 
 All endpoints are under the path prefix `/api/localsend/v2/` on port 53317.
 Request and response bodies are JSON (`application/json; charset=utf-8`)
-unless noted. All requests are HTTPS.
+unless noted. In the shipped 1.2.x receiver all requests are plain
+HTTP/1.1; the HTTPS behavior described in the TLS sections is the planned
+design.
 
 | Method | Path | Purpose |
 |---|---|---|

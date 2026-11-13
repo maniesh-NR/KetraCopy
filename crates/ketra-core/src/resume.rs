@@ -125,6 +125,18 @@ pub fn probe_resume(
                     return Err(Error::Canceled);
                 }
                 if chunk_equal(&mut srcf, &mut dstf, off, len)? {
+                    // Defense-in-depth: before trusting a journal bound,
+                    // also verify the chunk directly below it (cheap). The
+                    // pipeline's sync-before-record invariant already makes
+                    // corruption below a durable bound impossible; this
+                    // catches journal/disk corruption regardless.
+                    if off > 0
+                        && !chunk_equal(&mut srcf, &mut dstf, off - chunk, chunk as usize)?
+                    {
+                        off -= chunk;
+                        len = chunk as usize;
+                        continue;
+                    }
                     return Ok(off + len as u64);
                 }
                 if off == 0 {

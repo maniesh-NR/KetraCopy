@@ -5,7 +5,7 @@ rem
 rem Produces:
 rem   KetraCopy-portable\                          (self-contained folder)
 rem     ketra.exe, ketracopy-gui.exe (if built), LICENSE, portable.flag
-rem   dist\KetraCopy-1.1.0-portable-windows.zip    (via PowerShell Compress-Archive)
+rem   dist\KetraCopy-1.2.1-portable-windows.zip    (via PowerShell Compress-Archive)
 rem
 rem The empty file "portable.flag" next to ketra.exe switches the engine into
 rem portable mode: settings are read/written as ketra.json next to the exe
@@ -17,7 +17,7 @@ rem are portable_linux.sh / portable_macos.sh.
 rem =============================================================================
 
 setlocal EnableExtensions
-set VERSION=1.1.0
+set VERSION=1.2.1
 set HERE=%~dp0
 set ROOT=%HERE%..
 pushd "%ROOT%"

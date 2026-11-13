@@ -24,7 +24,7 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
-VERSION="1.2.0"
+VERSION="1.2.1"
 DIST="$ROOT/dist"
 DOCS=(README.md LICENSE ATTRIBUTIONS.md SHELL-INTEGRATION.md)
 
@@ -40,7 +40,7 @@ rm -rf "$DIST/linux-x86_64"
 mkdir -p "$DIST/linux-x86_64"
 install -m 755 target/release/ketra          "$DIST/linux-x86_64/ketra"
 install -m 755 target/release/ketracopy-gui  "$DIST/linux-x86_64/ketracopy-gui"
-cp "$DIST/README.txt" "$DIST/linux-x86_64/README.txt" 2>/dev/null || true
+cp "$ROOT/packaging/dist-README.txt" "$DIST/linux-x86_64/README.txt"
 STAGE="$DIST/ketracopy-${VERSION}-linux-x86_64"
 rm -rf "$STAGE"; mkdir -p "$STAGE"
 install -m 755 target/release/ketra          "$STAGE/ketra"

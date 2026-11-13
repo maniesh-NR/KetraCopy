@@ -5,7 +5,7 @@
 # Produces:
 #   dist/macos/KetraCopy.app                              (via make-app.sh)
 #     Contents/MacOS/{ketra, ketracopy-gui?}, portable.flag, README-portable.txt
-#   dist/KetraCopy-1.2.0-portable-macos.zip
+#   dist/KetraCopy-1.2.1-portable-macos.zip
 #
 # Portable-mode note (being honest about the spec):
 #   crates/ketra-core/src/settings.rs looks for portable.flag NEXT TO THE
@@ -17,7 +17,7 @@
 # =============================================================================
 set -euo pipefail
 
-VERSION="1.2.0"
+VERSION="1.2.1"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 DIST="$ROOT/dist"

@@ -1,58 +1,94 @@
-# Builds native release binaries for every desktop target and attaches
-# them to the GitHub release for the pushed v* tag.
+# Builds the NATIVE Windows (msvc, CLI + GUI) and macOS (CLI, both darwin
+# targets) release binaries and attaches them to the GitHub release for a
+# pushed v* tag.
 #
-# Sandbox-produced assets (Linux .deb, portable, cross-built Windows zips)
-# are attached at release creation time; this workflow adds the natively
-# built Windows/macOS artifacts on top (same-name assets are skipped).
+# Single-producer rule (Gate 1, Strategist): every release asset has exactly
+# ONE producer — Linux (.tar.gz, portable, .deb) and the source archives are
+# built in the dev sandbox by scripts/package-dist.sh and attached at
+# release-creation time; this workflow builds ONLY the Windows zips and the
+# macOS tarballs (natively, so no mingw/osxcross toolchain is needed in the
+# sandbox — see harness/evidence/2026-11-13-S7/ for the failed sandbox
+# zigbuild attempt). Nothing overwrites the hash-baselined sandbox artifacts
+# (harness/state/artifact-hashes.md).
+#
+# The macOS GUI is deferred in 1.2.x (the pinned egui 0.28 stack via
+# objc2 0.4.1 does not compile against rustc >= 1.100 on macOS) — CLI only.
+#
+# Verify this workflow is green on main via workflow_dispatch BEFORE
+# pushing a release tag.
 
 name: release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
 permissions:
   contents: write
 
 jobs:
-  build:
+  build-windows:
+    name: windows (${{ matrix.target }})
     strategy:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-22.04,   target: x86_64-unknown-linux-gnu,  name: linux-x86_64 }
-          - { os: windows-latest, target: x86_64-pc-windows-msvc,    name: windows-x86_64 }
-          - { os: windows-latest, target: i686-pc-windows-msvc,      name: windows-i686 }
-          - { os: macos-13,       target: x86_64-apple-darwin,       name: macos-x86_64 }
-          - { os: macos-latest,   target: aarch64-apple-darwin,      name: macos-aarch64 }
-    runs-on: ${{ matrix.os }}
+          - { target: x86_64-pc-windows-msvc, arch: x86_64 }
+          - { target: i686-pc-windows-msvc,   arch: i686 }
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
       - name: Build (CLI + GUI)
-        shell: bash
-        run: |
-          cargo build --release --workspace --target ${{ matrix.target }}
-          echo "BIN_DIR=target/${{ matrix.target }}/release" >> "$GITHUB_ENV"
+        run: cargo build --release --workspace --target ${{ matrix.target }}
       - name: Package
         shell: bash
         run: |
-          VER=$(cargo metadata --no-deps --format-version 1 | python3 -c "import json,sys; print(json.load(sys.stdin)['packages'][0]['version'])")
-          OUT="ketracopy-${VER}-${{ matrix.name }}"
+          VER=$(cargo metadata --no-deps --format-version 1 | python3 -c "import json,sys; d=json.load(sys.stdin); print([p for p in d['packages'] if p['name']=='ketra-cli'][0]['version'])")
+          OUT="ketracopy-${VER}-windows-${{ matrix.arch }}"
           mkdir -p "$OUT"
-          if [ -f "$BIN_DIR/ketra" ];       then cp "$BIN_DIR/ketra" "$OUT/"; fi
-          if [ -f "$BIN_DIR/ketra.exe" ];   then cp "$BIN_DIR/ketra.exe" "$OUT/"; fi
-          if [ -f "$BIN_DIR/ketracopy-gui" ]; then cp "$BIN_DIR/ketracopy-gui" "$OUT/"; fi
-          if [ -f "$BIN_DIR/ketracopy-gui.exe" ]; then cp "$BIN_DIR/ketracopy-gui.exe" "$OUT/"; fi
+          cp "target/${{ matrix.target }}/release/ketra.exe" "$OUT/"
+          cp "target/${{ matrix.target }}/release/ketracopy-gui.exe" "$OUT/"
           cp README.md LICENSE ATTRIBUTIONS.md SHELL-INTEGRATION.md "$OUT/"
-          if [[ "$OUT" == *windows* ]]; then
-            7z a "${OUT}.zip" "$OUT" >/dev/null
-          else
-            tar czf "${OUT}.tar.gz" "$OUT"
-          fi
-      - name: Attach to release
+          7z a "${OUT}.zip" "$OUT" >/dev/null
+      - name: Attach to release (tag builds only)
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ketracopy-*.tar.gz
-            ketracopy-*.zip
+            ketracopy-*-windows-*.zip
+
+  build-macos:
+    name: macos (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [x86_64-apple-darwin, aarch64-apple-darwin]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Build CLI (GUI deferred on macOS)
+        run: cargo build --release -p ketra-cli --target ${{ matrix.target }}
+      - name: Package
+        run: |
+          VER=$(cargo metadata --no-deps --format-version 1 | python3 -c "import json,sys; d=json.load(sys.stdin); print([p for p in d['packages'] if p['name']=='ketra-cli'][0]['version'])")
+          case "${{ matrix.target }}" in
+            x86_64-*)  ARCH=x86_64 ;;
+            aarch64-*) ARCH=aarch64 ;;
+          esac
+          OUT="ketracopy-${VER}-macos-${ARCH}"
+          mkdir -p "$OUT"
+          cp "target/${{ matrix.target }}/release/ketra" "$OUT/"
+          cp LICENSE ATTRIBUTIONS.md SHELL-INTEGRATION.md "$OUT/"
+          cp packaging/dist-README-macos.txt "$OUT/README-macos.txt"
+          tar czf "${OUT}.tar.gz" "$OUT"
+      - name: Attach to release (tag builds only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ketracopy-*-macos-*.tar.gz

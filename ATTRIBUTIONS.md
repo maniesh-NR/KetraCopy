@@ -9,6 +9,7 @@ at the direction of the project owner:
 |---|---|
 | Primary LLM | **GLM** (large language model by **Z.ai**), via the Z.ai coding-agent workflow |
 | Subagents used during development | Z.ai built-in agents — general-purpose research agent, Explore (codebase exploration), Plan (architecture), frontend-styling-expert (MD3 design-system polish), full-stack-developer (project scaffolding) |
+| Adversarial review panels (since 1.2.1) | Independent agent reviewers under the owner-mandated harness workflow (`harness/WORKFLOW.md`): Red Team (code correctness), Auditor (independent re-verification), Strategist (roadmap/release readiness); gate records in `harness/reviews/` |
 | Skill packs consulted (from skills.sh / ClawHub) | `skill-finder-cn` (skill discovery), `android-native-dev` (Material Design 3 / Android guidance), `android-project-generator` (Gradle project scaffolding), `ah-kotlin-specialist` (Kotlin review) — all MIT-0 licensed; the `wshobson/agents` and software-mansion collections were reviewed as reference material only |
 
 All code was reviewed and tested by the contributors before release; the

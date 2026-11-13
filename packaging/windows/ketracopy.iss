@@ -22,9 +22,9 @@
 ; =============================================================================
 
 #define MyAppName "KetraCopy"
-#define MyAppVersion "1.2.0"
+#define MyAppVersion "1.2.1"
 #define MyAppPublisher "KetraCopy contributors"
-#define MyAppURL "https://example.invalid/ketracopy"
+#define MyAppURL "https://github.com/maniesh-NR/KetraCopy"
 
 [Setup]
 AppId={{B4E7D3C2-1A96-4F5E-8C7D-9F0A1B2C3D4E}

@@ -3,16 +3,24 @@
 A developer guide to the KetraCopy Android app: build pipeline, package
 layout, the four UI scopes, known limitations, and troubleshooting.
 
+> **Status (1.2.1)**: source-complete but **not currently building** — the
+> Gradle build still references `crates/ketra-ffi`/`crates/ketra-net`
+> (moved to `attic/` in 1.1.0) and the Kotlin side is being re-pointed at
+> the `ketra-core` JNI bridge (`crates/ketra-core/src/jni.rs`). The APK
+> workflow is dispatch-only until then; no APK ships with 1.2.1. This
+> document describes the intended architecture.
+
 ## Overview
 
 The KetraCopy Android app is the mobile face of the same Rust engine that
-powers the desktop CLI (`ketra`) and GUI (`ketra-gui`). It is a single APK
+powers the desktop CLI (`ketra`) and GUI (`ketracopy-gui`). It is a single APK
 that combines four things:
 
 - a **file manager** for local storage (via the Android Storage Access
   Framework, accelerated by the `ketra-core` copy/move pipeline),
 - **LAN transfer** to and from other KetraCopy devices (and any LocalSend
-  v2 peer), using mDNS discovery and HTTPS on port 53317,
+  v2 peer), using mDNS discovery and plain HTTP/1.1 on port 53317 (HTTPS
+  planned),
 - an entry point for **Cloud and SMB** destinations through a pluggable
   `CloudProvider` interface, and
 - **compression and share-sheet** integration (zip via `java.util.zip` and

@@ -1,0 +1,481 @@
+warning: unused field `rust-version` in `workspace.package`
+  --> Cargo.toml:16:1
+   |
+16 | rust-version = "1.75"
+   | ^^^^^^^^^^^^
+   |
+   = note: `cargo::unused_workspace_package_fields` is set to `warn` by default
+help: consider removing the field `workspace.package.rust-version`
+warning: workspace (manifest) generated 1 warning
+warning: unused label
+   --> crates/ketra-core/src/engine.rs:203:13
+    |
+203 |             'tasks: for (i, task) in plan.tasks.iter_mut().enumerate() {
+    |             ^^^^^^
+    |
+    = note: `#[warn(unused_labels)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `CLASS_IN`
+  --> crates/ketra-core/src/lan/mdns.rs:46:36
+   |
+46 |     use super::{CLASS_CACHE_FLUSH, CLASS_IN};
+   |                                    ^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unexpected `cfg` condition value: `mdns_debug`
+   --> crates/ketra-core/src/lan/mdns.rs:727:17
+    |
+727 |         if cfg!(feature = "mdns_debug") || std::env::var_os("KETRA_MDNS_DEBUG").is_some() {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^ help: remove the condition
+    |
+    = note: no expected values for `feature`
+    = help: consider adding `mdns_debug` as a feature in `Cargo.toml`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: `#[warn(unexpected_cfgs)]` on by default
+
+warning: unused import: `Json`
+ --> crates/ketra-core/src/settings.rs:4:25
+  |
+4 | use crate::json::{self, Json};
+  |                         ^^^^
+
+warning: unused import: `crate::hash::Hasher`
+ --> crates/ketra-core/src/options.rs:3:5
+  |
+3 | use crate::hash::Hasher;
+  |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `b2`
+   --> crates/ketra-core/src/lan/server.rs:169:17
+    |
+169 |             let b2 = base.to_string();
+    |                 ^^ help: if this is intentional, prefix it with an underscore: `_b2`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> crates/ketra-core/src/netmode.rs:217:17
+    |
+217 |             let mut times = std::fs::FileTimes::new();
+    |                 ----^^^^^
+    |                 |
+    |                 help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> crates/ketra-core/src/pipeline.rs:299:9
+    |
+299 |     let mut zero_buf: Vec<u8> = if hasher.is_some() { vec![0u8; chunk] } else { Vec::new() };
+    |         ----^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: unused variable: `e`
+   --> crates/ketra-core/src/pipeline.rs:372:29
+    |
+372 |                         Err(e) => {
+    |                             ^ help: if this is intentional, prefix it with an underscore: `_e`
+
+warning: variable does not need to be mutable
+   --> crates/ketra-core/src/pipeline.rs:696:17
+    |
+696 |             let mut times = std::fs::FileTimes::new();
+    |                 ----^^^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: unused variable: `root`
+   --> crates/ketra-core/src/plan.rs:104:5
+    |
+104 |     root: &Path,
+    |     ^^^^ help: if this is intentional, prefix it with an underscore: `_root`
+
+warning: unused variable: `md`
+   --> crates/ketra-core/src/plan.rs:209:13
+    |
+209 | fn perms_of(md: &std::fs::Metadata) -> u32 {
+    |             ^^ help: if this is intentional, prefix it with an underscore: `_md`
+
+warning: field `dest_dir` is never read
+  --> crates/ketra-core/src/lan/server.rs:86:5
+   |
+85 | struct Session {
+   |        ------- field in this struct
+86 |     dest_dir: PathBuf,
+   |     ^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `FILE_FLAG_BACKUP_SEMANTICS` is never used
+  --> crates/ketra-core/src/platform/windows.rs:32:7
+   |
+32 | const FILE_FLAG_BACKUP_SEMANTICS: DWORD = 0x0200_0000;
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `CloseHandle` is never used
+  --> crates/ketra-core/src/platform/windows.rs:48:8
+   |
+48 |     fn CloseHandle(hObject: HANDLE) -> BOOL;
+   |        ^^^^^^^^^^^
+
+warning: unused `FileTimes` that must be used
+   --> crates/ketra-core/src/netmode.rs:218:13
+    |
+218 |             times.set_modified(mtime);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: must be applied to a file via `File::set_times` to have any effect
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+218 |             let _ = times.set_modified(mtime);
+    |             +++++++
+
+warning: unused `FileTimes` that must be used
+   --> crates/ketra-core/src/netmode.rs:220:17
+    |
+220 |                 times.set_accessed(atime);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: must be applied to a file via `File::set_times` to have any effect
+help: use `let _ = ...` to ignore the resulting value
+    |
+220 |                 let _ = times.set_accessed(atime);
+    |                 +++++++
+
+warning: unused `FileTimes` that must be used
+   --> crates/ketra-core/src/pipeline.rs:697:13
+    |
+697 |             times.set_modified(mtime);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: must be applied to a file via `File::set_times` to have any effect
+help: use `let _ = ...` to ignore the resulting value
+    |
+697 |             let _ = times.set_modified(mtime);
+    |             +++++++
+
+warning: unused `FileTimes` that must be used
+   --> crates/ketra-core/src/pipeline.rs:699:17
+    |
+699 |                 times.set_accessed(atime);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: must be applied to a file via `File::set_times` to have any effect
+help: use `let _ = ...` to ignore the resulting value
+    |
+699 |                 let _ = times.set_accessed(atime);
+    |                 +++++++
+
+warning: `ketra-core` (lib) generated 19 warnings (run `cargo fix --lib -p ketra-core` to apply 9 suggestions)
+   Compiling ketra-cli v1.2.1 (/home/z/my-project/download/ketracopy/crates/ketra-cli)
+   Compiling ketra-gui v1.2.1 (/home/z/my-project/download/ketracopy/crates/ketra-gui)
+warning: unused import: `std::time::Duration`
+ --> crates/ketra-cli/src/args.rs:4:5
+  |
+4 | use std::time::Duration;
+  |     ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `std::time::Duration`
+  --> crates/ketra-cli/src/clip.rs:25:5
+   |
+25 | use std::time::Duration;
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Path`
+  --> crates/ketra-cli/src/shell.rs:25:17
+   |
+25 | use std::path::{Path, PathBuf};
+   |                 ^^^^
+
+warning: unused import: `color`
+  --> crates/ketra-gui/src/main.rs:20:17
+   |
+20 | use ketra_md3::{color, components, theme};
+   |                 ^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `path`
+   --> crates/ketra-gui/src/main.rs:188:24
+    |
+188 |         Event::Error { path, message } => p.failed += 1,
+    |                        ^^^^ help: try ignoring the field: `path: _`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `message`
+   --> crates/ketra-gui/src/main.rs:188:30
+    |
+188 |         Event::Error { path, message } => p.failed += 1,
+    |                              ^^^^^^^ help: try ignoring the field: `message: _`
+
+warning: variable does not need to be mutable
+   --> crates/ketra-gui/src/main.rs:416:13
+    |
+416 |         let mut s = Settings2::load();
+    |             ----^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> crates/ketra-cli/src/args.rs:239:17
+    |
+239 |             let mut i = 0;
+    |                 ----^
+    |                 |
+    |                 help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> crates/ketra-cli/src/args.rs:423:25
+    |
+423 |                     let mut i = 1;
+    |                         ----^
+    |                         |
+    |                         help: remove this `mut`
+
+warning: unused variable: `i`
+   --> crates/ketra-cli/src/args.rs:239:17
+    |
+239 |             let mut i = 0;
+    |                 ^^^^^ help: if this is intentional, prefix it with an underscore: `_i`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `i`
+   --> crates/ketra-cli/src/args.rs:423:25
+    |
+423 |                     let mut i = 1;
+    |                         ^^^^^ help: if this is intentional, prefix it with an underscore: `_i`
+
+warning: fields `kind`, `sources`, and `dest` are never read
+  --> crates/ketra-gui/src/main.rs:87:5
+   |
+86 | struct Job {
+   |        --- fields in this struct
+87 |     kind: TransferKind,
+   |     ^^^^
+88 |     sources: Vec<PathBuf>,
+   |     ^^^^^^^
+89 |     dest: PathBuf,
+   |     ^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `fingerprint` is never read
+   --> crates/ketra-gui/src/main.rs:227:5
+    |
+223 | struct PeerRow {
+    |        ------- field in this struct
+...
+227 |     fingerprint: String,
+    |     ^^^^^^^^^^^
+    |
+    = note: `PeerRow` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: method `start_receive` is never used
+   --> crates/ketra-gui/src/main.rs:317:8
+    |
+241 | impl LanState {
+    | ------------- method in this implementation
+...
+317 |     fn start_receive(&mut self, dest: PathBuf) {
+    |        ^^^^^^^^^^^^^
+
+warning: method `apply_theme_now` is never used
+   --> crates/ketra-gui/src/main.rs:539:8
+    |
+414 | impl KetraApp {
+    | ------------- method in this implementation
+...
+539 |     fn apply_theme_now(&mut self, ctx: &egui::Context) {
+    |        ^^^^^^^^^^^^^^^
+
+warning: struct `LanSelectedSlot` is never constructed
+    --> crates/ketra-gui/src/main.rs:1352:8
+     |
+1352 | struct LanSelectedSlot(Option<usize>);
+     |        ^^^^^^^^^^^^^^^
+
+warning: unused variable: `no_manifest`
+  --> crates/ketra-cli/src/lan.rs:79:5
+   |
+79 |     no_manifest: bool,
+   |     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_no_manifest`
+
+warning: unused variable: `targets`
+   --> crates/ketra-cli/src/shell.rs:788:16
+    |
+788 | fn install_for(targets: Vec<String>) -> Result<(), String> {
+    |                ^^^^^^^ help: if this is intentional, prefix it with an underscore: `_targets`
+
+warning: field `common` is never read
+  --> crates/ketra-cli/src/args.rs:97:49
+   |
+97 |     Test { sources: Vec<PathBuf>, hash: String, common: CommonArgs },
+   |     ---- field in this variant                  ^^^^^^
+   |
+   = note: `Command` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `hostname_string_pub` is never used
+   --> crates/ketra-cli/src/args.rs:561:8
+    |
+561 | pub fn hostname_string_pub() -> String {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `uri_escape` is never used
+  --> crates/ketra-cli/src/clip.rs:53:4
+   |
+53 | fn uri_escape(p: &str) -> String {
+   |    ^^^^^^^^^^
+
+warning: function `uri_unescape` is never used
+  --> crates/ketra-cli/src/clip.rs:66:4
+   |
+66 | fn uri_unescape(s: &str) -> String {
+   |    ^^^^^^^^^^^^
+
+warning: function `encode_uri_list` is never used
+  --> crates/ketra-cli/src/clip.rs:86:8
+   |
+86 | pub fn encode_uri_list(paths: &[PathBuf]) -> String {
+   |        ^^^^^^^^^^^^^^^
+
+warning: function `parse_uri_list` is never used
+  --> crates/ketra-cli/src/clip.rs:94:8
+   |
+94 | pub fn parse_uri_list(text: &str) -> Vec<PathBuf> {
+   |        ^^^^^^^^^^^^^^
+
+warning: constant `GNOME_COPIED_FILES_TYPE` is never used
+   --> crates/ketra-cli/src/clip.rs:112:11
+    |
+112 | pub const GNOME_COPIED_FILES_TYPE: &str = "text/x-special/gnome-copied-files";
+    |           ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `URI_LIST_TYPE` is never used
+   --> crates/ketra-cli/src/clip.rs:113:11
+    |
+113 | pub const URI_LIST_TYPE: &str = "text/uri-list";
+    |           ^^^^^^^^^^^^^
+
+warning: constant `KDE_CUT_TYPE` is never used
+   --> crates/ketra-cli/src/clip.rs:114:11
+    |
+114 | pub const KDE_CUT_TYPE: &str = "application/x-kde-cutselection";
+    |           ^^^^^^^^^^^^
+
+warning: function `encode_gnome_files` is never used
+   --> crates/ketra-cli/src/clip.rs:116:8
+    |
+116 | pub fn encode_gnome_files(mode: ClipMode, paths: &[PathBuf]) -> String {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `parse_gnome_files` is never used
+   --> crates/ketra-cli/src/clip.rs:129:8
+    |
+129 | pub fn parse_gnome_files(text: &str) -> Option<ClipData> {
+    |        ^^^^^^^^^^^^^^^^^
+
+warning: function `default_manifest_path` is never used
+  --> crates/ketra-cli/src/manifest_cmd.rs:91:8
+   |
+91 | pub fn default_manifest_path(root: &Path) -> PathBuf {
+   |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `have` is never used
+  --> crates/ketra-cli/src/shell.rs:36:4
+   |
+36 | fn have(cmd: &str) -> bool {
+   |    ^^^^
+
+warning: function `detect_plain` is never used
+   --> crates/ketra-cli/src/view.rs:165:8
+    |
+165 | pub fn detect_plain(explicit_plain: bool) -> bool {
+    |        ^^^^^^^^^^^^
+
+warning: direct cast of function item into an integer
+  --> crates/ketra-cli/src/sig.rs:55:43
+   |
+55 |             SetConsoleCtrlHandler(handler as usize, 1);
+   |                                           ^^^^^^^^
+   |
+   = note: `#[warn(function_casts_as_integer)]` on by default
+help: first cast to a pointer `as *const ()`
+   |
+55 |             SetConsoleCtrlHandler(handler as *const () as usize, 1);
+   |                                           ++++++++++++
+
+error: linking with `/home/z/my-project/tools/zigwrap-x86_64.sh` failed: exit status: 1
+  |
+  = note:  "/home/z/my-project/tools/zigwrap-x86_64.sh" "-fno-use-linker-plugin" "-Wl,--dynamicbase" "-Wl,--disable-auto-image-base" "-m64" "-Wl,--high-entropy-va" "<22 object files omitted>" "-Wl,-Bdynamic" "-luser32" "-lkernel32" "-Wl,-Bstatic" "/home/z/my-project/download/ketracopy/target/x86_64-pc-windows-gnu/release/build/ketra-cli/6cf938c3032f46c9/out/rustcnQBtkI/libstd-68a98b1e3aff2557.rlib" "<sysroot>/lib/rustlib/x86_64-pc-windows-gnu/lib/libcompiler_builtins-*.rlib" "-Wl,-Bdynamic" "-lkernel32" "-lkernel32" "-lntdll" "-luserenv" "-lws2_32" "-ldbghelp" "-lsynchronization" "-lgcc_eh" "-l:libpthread.a" "-lmsvcrt" "-lmingwex" "-lmingw32" "-lgcc" "-lmsvcrt" "-lmingwex" "-luser32" "-lkernel32" "-Wl,--nxcompat" "-o" "/home/z/my-project/download/ketracopy/target/x86_64-pc-windows-gnu/release/build/ketra-cli/6cf938c3032f46c9/out/ketra.exe" "-Wl,--gc-sections" "-Wl,-O1" "-Wl,--strip-all" "-nodefaultlibs"
+  = note: some arguments are omitted. use `--verbose` to show all linker arguments
+  = note: warning: ignoring deprecated linker optimization setting '1'
+          error: unable to find dynamic system library 'synchronization' using strategy 'paths_first'. searched paths:
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/synchronization.dll
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/synchronization.lib
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/libsynchronization.a
+          error: unable to find dynamic system library 'gcc_eh' using strategy 'paths_first'. searched paths:
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/gcc_eh.dll
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/gcc_eh.lib
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/libgcc_eh.a
+          error: unable to find dynamic system library 'msvcrt' using strategy 'paths_first'. searched paths:
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/msvcrt.dll
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/msvcrt.lib
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/libmsvcrt.a
+          error: unable to find dynamic system library 'gcc' using strategy 'paths_first'. searched paths:
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/gcc.dll
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/gcc.lib
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/libgcc.a
+          
+
+warning: `ketra-cli` (bin "ketra") generated 24 warnings
+error: could not compile `ketra-cli` (bin "ketra") due to 1 previous error; 24 warnings emitted
+warning: build failed, waiting for other jobs to finish...
+error: linking with `/home/z/my-project/tools/zigwrap-x86_64.sh` failed: exit status: 1
+  |
+  = note:  "/home/z/my-project/tools/zigwrap-x86_64.sh" "-fno-use-linker-plugin" "-Wl,--dynamicbase" "-Wl,--disable-auto-image-base" "-m64" "-Wl,--high-entropy-va" "<105 object files omitted>" "-Wl,-Bdynamic" "-luser32" "-lkernel32" "-Wl,-Bstatic" "/home/z/my-project/download/ketracopy/target/x86_64-pc-windows-gnu/release/build/ketra-gui/034f697830ea962d/out/rustcjhgq2f/{liblibloading-31d1685c0a9155a3,libwebbrowser-c9bd33bc844c0184,libwindows_sys-44fdd13c99bb8ab0,libparking_lot_core-3c0cfc342816290b,libstd-68a98b1e3aff2557}.rlib" "<sysroot>/lib/rustlib/x86_64-pc-windows-gnu/lib/libcompiler_builtins-*.rlib" "-Wl,-Bdynamic" "-lopengl32" "-lkernel32" "-luser32" "-lshell32" "-lgdi32" "-ladvapi32" "-lgdi32" "-lkernel32" "-lmsimg32" "-lopengl32" "-luser32" "-lwinspool" "-lwindows.0.48.5" "-lkernel32" "-lkernel32" "-lntdll" "-luserenv" "-lws2_32" "-ldbghelp" "-lsynchronization" "-lgcc_eh" "-l:libpthread.a" "-lmsvcrt" "-lmingwex" "-lmingw32" "-lgcc" "-lmsvcrt" "-lmingwex" "-luser32" "-lkernel32" "-Wl,--nxcompat" "-L" "/home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib" "-o" "/home/z/my-project/download/ketracopy/target/x86_64-pc-windows-gnu/release/build/ketra-gui/034f697830ea962d/out/ketracopy_gui.exe" "-Wl,--subsystem,windows" "-Wl,--gc-sections" "-Wl,-O1" "-Wl,--strip-all" "-nodefaultlibs"
+  = note: some arguments are omitted. use `--verbose` to show all linker arguments
+  = note: warning: ignoring deprecated linker optimization setting '1'
+          error: unable to find dynamic system library 'synchronization' using strategy 'paths_first'. searched paths:
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/synchronization.dll
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/synchronization.lib
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/libsynchronization.a
+            /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib/synchronization.dll
+            /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib/synchronization.lib
+            /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib/libsynchronization.a
+          error: unable to find dynamic system library 'gcc_eh' using strategy 'paths_first'. searched paths:
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/gcc_eh.dll
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/gcc_eh.lib
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/libgcc_eh.a
+            /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib/gcc_eh.dll
+            /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib/gcc_eh.lib
+            /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib/libgcc_eh.a
+          error: unable to find dynamic system library 'msvcrt' using strategy 'paths_first'. searched paths:
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/msvcrt.dll
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/msvcrt.lib
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/libmsvcrt.a
+            /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib/msvcrt.dll
+            /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib/msvcrt.lib
+            /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib/libmsvcrt.a
+          error: unable to find dynamic system library 'gcc' using strategy 'paths_first'. searched paths:
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/gcc.dll
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/gcc.lib
+            /home/z/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-pc-windows-gnu/lib/self-contained/libgcc.a
+            /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib/gcc.dll
+            /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib/gcc.lib
+            /home/z/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/windows_x86_64_gnu-0.48.5/lib/libgcc.a
+          
+
+warning: `ketra-gui` (bin "ketracopy-gui") generated 9 warnings
+error: could not compile `ketra-gui` (bin "ketracopy-gui") due to 1 previous error; 9 warnings emitted

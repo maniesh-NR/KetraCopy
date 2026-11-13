@@ -2,30 +2,31 @@
 
 ## Prerequisites
 
-- Rust 1.75 or newer (`rust-version = "1.75"` in `crates/ketra-core/Cargo.toml`; workspace edition 2021). The development sandbox used rustc 1.99.1 on Linux x86-64.
-- `ketra-core` and `ketra-cli` have **zero external dependencies** — building the CLI (`cargo build --release -p ketra-cli`) needs no crates.io access; the root `Cargo.lock` additionally pins the GUI crates' `egui`/`eframe`/`rfd` tree.
-- The GUI crates are workspace members and depend on crates.io: `ketra-md3` (Material Design 3 design system; dependency `egui =0.28.1`) and `ketra-gui` (binary `ketra-gui`; `eframe =0.28.1` with the `glow` OpenGL renderer, plus `rfd 0.13` for native file dialogs). Both compile (`cargo check --workspace`); `ketra-gui` also release-builds and links (`cargo build --release -p ketra-gui`). Display behavior was not exercised in the headless environment where this documentation was written.
+- Rust 1.75 or newer (`rust-version = "1.75"` in `crates/ketra-core/Cargo.toml`; workspace edition 2021). The development sandbox used rustc 1.100.0 on Linux x86-64.
+- `ketra-core` and `ketra-cli` have **zero external dependencies** — building the CLI (`cargo build --release -p ketra-cli`) needs no crates.io access; the root `Cargo.lock` additionally pins the GUI crates' `egui`/`eframe` tree.
+- The GUI crates are workspace members and depend on crates.io: `ketra-md3` (Material Design 3 design system; dependency `egui =0.28.1`) and `ketra-gui` (binary `ketracopy-gui`; `eframe =0.28.1` with the `glow` OpenGL renderer). Both compile (`cargo check --workspace`); `ketra-gui` also release-builds and links (`cargo build --release -p ketra-gui`). Display behavior is exercised under Xvfb by the interop suite.
 - Tests: `bash` and `python3` for the integration suite (`scripts/test_integration.sh`); `stat(1)` with GNU options is used for the sparse-file check, so the suite is POSIX-only.
 
 ## Linux
 
 ```sh
 cargo build --release -p ketra-cli     # produces target/release/ketra
-cargo test  -p ketra-core --lib        # 35 unit tests
-scripts/test_integration.sh            # 22 end-to-end checks (builds the release binary if needed)
+cargo test --workspace                 # 132 unit tests
+scripts/test_integration.sh            # 41 end-to-end checks (builds the release binary if needed)
+scripts/test_interop.sh                # feature-interoperability suite (needs Xvfb)
 ```
 
 No system libraries are required by the CLI/core: the platform layer is hand-maintained FFI against libc (`copy_file_range`, `statvfs`, `lseek`, `ioctl`). Only a C link environment (any glibc/musl toolchain) is needed. The same binary works on Mint (Cinnamon/MATE/Xfce), Debian, and other distributions; the engine never touches the display.
 
-A future GUI shell would need OpenGL and X11 development packages (`libgl1-mesa-dev`, `libx11-dev` on Debian-family) at build time; nothing in the current tree requires them.
+The GUI (`ketracopy-gui`) needs OpenGL and X11 development packages at build time (`libgl1-mesa-dev`, `libx11-dev` on Debian-family); the CLI/core need neither.
 
 ### GUI (Linux)
 
 ```sh
-cargo build --release -p ketra-gui    # builds ketra-md3 + ketra-gui (egui/eframe from crates.io)
+cargo build --release -p ketra-gui    # builds ketra-md3 + ketracopy-gui (egui/eframe from crates.io)
 ```
 
-The eframe feature set is `glow` (plain OpenGL 2.1+/ES) with `x11` and `wayland`; file dialogs use `rfd`'s `xdg-portal` backend, so no GTK development headers are needed. By the crate's own design notes this is the renderer path intended to work unchanged on Win7 (WGL/OpenGL), macOS 10.15+ and Linux.
+The eframe feature set is `glow` (plain OpenGL 2.1+/ES) with `x11` and `wayland`, so no GTK development headers are needed. By the crate's own design notes this is the renderer path intended to work unchanged on Win7 (WGL/OpenGL), macOS 10.15+ and Linux.
 
 ## Windows
 

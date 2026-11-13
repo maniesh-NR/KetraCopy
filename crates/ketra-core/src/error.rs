@@ -15,6 +15,9 @@ pub enum Error {
     Verify { path: String, offset: u64 },
     /// The destination volume ran out of space.
     NoSpace { path: String },
+    /// The source became shorter than planned while it was being read.
+    /// The destination is left partial (journalled) for `--resume`.
+    Shrank { path: String, copied: u64, planned: u64 },
     /// The current platform or filesystem cannot do what was asked.
     Unsupported(String),
     /// Settings or manifest files are malformed.
@@ -50,6 +53,10 @@ impl fmt::Display for Error {
                 write!(f, "verification failed at byte {offset} of {path}")
             }
             Error::NoSpace { path } => write!(f, "no space left on destination volume ({path})"),
+            Error::Shrank { path, copied, planned } => write!(
+                f,
+                "source shrank mid-copy: {copied} of {planned} bytes read of {path}; the partial destination was kept for --resume"
+            ),
             Error::Unsupported(m) => write!(f, "unsupported operation: {m}"),
             Error::Config(m) => write!(f, "configuration error: {m}"),
             Error::Conflict { path } => {

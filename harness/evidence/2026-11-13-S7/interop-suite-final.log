@@ -1,0 +1,134 @@
+
+== fixture tree (unicode, empty, sparse, 8 MiB payload) ==
+  PASS fixtures created
+  PASS Xvfb :97 up (clipboard/GUI sections live)
+
+== S1. settings file → engine defaults (CLI/GUI shared ketracopy.json) ==
+  PASS ketra config exits 0
+  PASS config shows verify=manifest
+  PASS config shows limit=2000000
+  PASS copy with settings verify=manifest exits 0
+  PASS manifest written WITHOUT --verify flag (settings honored)
+  PASS files copied (engine ran normally)
+  PASS copy under settings limit exits 0
+  PASS settings speed limit held (took 2201ms ≥ 1800ms, burst-adjusted)
+  PASS --limit 0 accepted
+  PASS --limit 0 cleared the settings limit (took 36ms < 2500ms)
+  PASS copy with use_clone=false exits 0
+
+== S2. verify × manifest × conflicts × filters × flatten ==
+  PASS copy --exclude --verify inline exits 0
+  PASS structure preserved (dir contents at dest root)
+  PASS exclude filter applied
+  PASS bit-identical after inline verify
+  PASS manifest command exits 0
+  PASS manifest verify clean
+  PASS verify exits 4 on corruption (got 4)
+  PASS test passes a healthy file (read-test, got 0)
+  PASS verify clean after recopy (default manifest path)
+  PASS conflict=rename copy exits 0
+  PASS renamed to 'readme (2).txt'
+  PASS manifest refreshed over renamed file (verify clean)
+  PASS conflict=skip run exits 0
+  PASS existing file untouched by skip
+  PASS flatten+include copy exits 0
+  PASS flattened + filtered (no subdir)
+  PASS unicode+empty+0byte copy exits 0
+  PASS unicode filename preserved
+  PASS 0-byte file present
+  PASS manifest verify incl. unicode + 0-byte
+
+== S3. sparse × manifest (both modes) + all-disable combo + net-streams ==
+  PASS sparse-on copy exits 0
+  PASS sparse preserved (dst blocks 16 ≤ src 16)
+  PASS manifest verify clean over sparse copy
+  PASS sparse-off copy exits 0
+  PASS sparse-off allocated ≥ sparse-on (65536 ≥ 16)
+  PASS disable-combo (--no-clone --sparse off --no-times --no-attrs) exits 0
+  PASS content identical under disable-combo
+  PASS --net-streams 4 accepted on local fs
+
+== S4. dry-run ↔ real-run parity ==
+  PASS dry-run exits 0
+  PASS dry-run wrote nothing
+  PASS dry-run JSON plan reports total_files=9
+  PASS plan count == planned events == real count (9/9/9)
+
+== S5. throttle × interrupt × resume × verify × manifest (one flow) ==
+  PASS journal present after interrupt
+  PASS resume run exits 0
+  PASS resumed file byte-identical
+  PASS manifest verify clean after resume
+  PASS --no-resume accepted on a clean run
+
+== S6. move × verify (same-fs rename and cross-fs fallback) ==
+  PASS move exits 0
+  PASS source files removed, dest present
+  PASS manifest verify clean after move
+  PASS cross-fs move exits 0
+  PASS cross-fs move: source gone, dest present
+
+== S7. clipboard ↔ engine (real X11 round-trip under Xvfb) ==
+  PASS clip put → selection owned (get succeeded)
+  PASS clip get --json: mode=copy, both paths
+  PASS clip paste (copy mode) exits 0
+  PASS pasted content identical
+  PASS copy mode keeps sources
+  PASS clip put --cut → mode=cut
+  PASS clip paste (cut mode) exits 0
+  PASS cut mode MOVED (source removed)
+  PASS moved content identical
+
+== S8. shell install → generated scripts ↔ CLI ↔ clipboard ↔ engine ==
+  PASS shell install exits 0
+  PASS all 9 integration artifacts installed
+  PASS shell status exits 0
+  PASS nautilus Copy script → pick → copy chain exits 0
+  PASS chain copied both files bit-identically
+  PASS nautilus Test (Verify) script → ketra test chain works
+  PASS nautilus Paste Here script exits 0
+  PASS paste-here landed in URI-decoded folder
+  PASS paste-here content identical
+  PASS dolphin servicemenu Exec references ketra
+  PASS dolphin servicemenu has action groups
+  PASS pick helper fails gracefully without a picker (exit 1)
+  PASS pick helper honors KETRA_DEST (scripting escape hatch)
+  PASS shell uninstall exits 0
+  PASS uninstall removed integration files
+
+== S9. LAN loopback: mDNS discovery ↔ receive ↔ send ↔ integrity ==
+  PASS receive server listening
+  PASS mDNS loopback discovery found testbox
+  PASS info endpoint responds (HTTP/1.1, LocalSend v2 paths)
+  PASS send 3 files to testbox exits 0
+  PASS received files bit-identical (3/3)
+  PASS ketra test healthy on received file
+  PASS re-send with --parallel 4 --chunk 1M (accelerated path) exits 0
+  PASS re-sent file still identical
+
+== S10. GUI smoke under Xvfb ==
+  PASS GUI ran for 8s without crashing (killed by timeout)
+  PASS GUI stderr panic-free
+
+== S11. artifact cross-consistency (dist ↔ build ↔ deb ↔ sums) ==
+  PASS dist/linux-x86_64/ketra == freshly built binary
+  PASS dist GUI binary == freshly built GUI
+  PASS portable tar.gz: ketra identical + extractable
+  PASS portable binary runs (--version)
+  PASS windows zip: not built in the sandbox (produced natively by the CI release workflow)
+  PASS macos tar.gz: not built in the sandbox (produced natively by the CI release workflow)
+  PASS SHA256SUMS.txt: all 5 entries verify
+  PASS .deb payload ketra == built binary
+  PASS .deb metadata intact
+  PASS manifest by dist binary → verify by built binary
+  PASS manifest by built binary → verify by dist binary
+  PASS src tar.gz extracts with workspace root
+  PASS src zip integrity test passes
+
+== S12. bench (128 MiB) ==
+  PASS bench exits 0
+  PASS bench write throughput: 2435.0 MiB/s
+  PASS bench read throughput: 4350.2 MiB/s
+
+============ INTEROP SUMMARY ============
+  PASS: 105  FAIL: 0

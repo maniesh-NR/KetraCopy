@@ -150,6 +150,14 @@ check $? "--verify manifest accepted"
 "$BIN" copy /nonexistent/path -d "$WORK/none" --progress quiet >/dev/null 2>&1
 [ $? -ne 0 ] && ok "missing source errors out" || bad "missing source errors out"
 
+say "17. --no-times must not skip a same-size modified file (Gate 1 fix)"
+mkdir -p "$WORK/nt"; printf 'AAAA' > "$WORK/nt/f.bin"
+"$BIN" copy "$WORK/nt/f.bin" -d "$WORK/nt-dst" --no-times --progress quiet >/dev/null 2>&1
+printf 'BBBB' > "$WORK/nt/f.bin"   # same size, different content
+"$BIN" copy "$WORK/nt/f.bin" -d "$WORK/nt-dst" --no-times --conflict overwrite --progress quiet >/dev/null 2>&1
+check $? "--no-times re-copy exits 0"
+cmp -s "$WORK/nt/f.bin" "$WORK/nt-dst/f.bin" && ok "--no-times re-copied the modified file (no size-only skip)" || bad "--no-times re-copied the modified file (no size-only skip)"
+
 say "summary"
 echo "  PASS: $PASS   FAIL: $FAIL"
 rm -rf "$WORK"

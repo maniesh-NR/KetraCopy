@@ -19,14 +19,14 @@
   <developer_name>KetraCopy contributors</developer_name>
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
-  <url type="homepage">https://example.invalid/ketracopy</url>
+  <url type="homepage">https://github.com/maniesh-NR/KetraCopy</url>
   <launchable type="desktop-id">io.github.ketracopy.KetraCopy.desktop</launchable>
   <provides>
     <binary>ketra</binary>
-    <binary>ketra-gui</binary>
+    <binary>ketracopy-gui</binary>
   </provides>
   <releases>
-    <release version="1.2.0" date="2026-01-01">
+    <release version="1.2.1" date="2026-11-13">
       <description>
         <p>Initial release.</p>
       </description>

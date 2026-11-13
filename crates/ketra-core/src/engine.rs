@@ -620,7 +620,13 @@ impl<'a> Engine<'a> {
         if exists {
             if let Ok(dmd) = std::fs::metadata(&dst_path) {
                 let same_size = dmd.len() == task.size;
-                let same_mtime = !self.opts.preserve_mtime || mtime_secs(&dmd) == task.mtime;
+                // Without mtime preservation the destination mtime is
+                // copy-time and carries no source information: a size match
+                // alone must never shortcut the copy (a same-size MODIFIED
+                // source would be silently skipped). Only a genuine mtime
+                // match may fast-skip; everything else falls through to the
+                // conflict policy.
+                let same_mtime = self.opts.preserve_mtime && mtime_secs(&dmd) == task.mtime;
                 if same_size && same_mtime && task.size > 0 {
                     (self.on_event)(&Event::FileSkip {
                         path: task.rel.clone(),

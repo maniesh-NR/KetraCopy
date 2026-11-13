@@ -293,10 +293,6 @@ fn prepare_upload(state: Arc<State>, req: Request, base: &str, ketra: bool) -> R
     if !accept {
         return Response::json(403, "{\"error\":\"declined\"}");
     }
-    if !prep.info.download && !ketra {
-        // v2 devices that are not accepting: still let Ketra peers through.
-    }
-
     // Expire old sessions, then create the new one.
     let session_id = format!(
         "s-{}",
@@ -317,23 +313,25 @@ fn prepare_upload(state: Arc<State>, req: Request, base: &str, ketra: bool) -> R
 
     let dest_dir = state.cfg.dest_dir.clone();
     let mut files = BTreeMap::new();
+    // Every destination is RESERVED at prepare time by atomically creating
+    // the file (O_EXCL): two files in one session (duplicate or
+    // sanitize-colliding names) and two concurrent sessions can never be
+    // assigned the same path — the classic "second upload silently
+    // truncates the first" loss. Abandoned reservations (no bytes, never
+    // completed) are cleaned up when the session expires.
+    let mut taken: std::collections::HashSet<PathBuf> = std::collections::HashSet::new();
     for f in &prep.files {
         if f.file_name.is_empty() {
             return Response::text(400, "empty fileName");
         }
         let safe = SECURE_NAME.replace(&f.file_name);
-        let path = unique_path(&dest_dir, &safe);
-        if let Some(parent) = path.parent() {
-            let _ = std::fs::create_dir_all(parent);
-        }
+        let path = match reserve_path(&dest_dir, &safe, &mut taken) {
+            Ok(p) => p,
+            Err(e) => return Response::text(500, &format!("reserve destination: {e}")),
+        };
         // Preallocate so parallel range writes land inside the final length.
         if ketra && f.size > 0 {
-            if let Ok(h) = std::fs::OpenOptions::new()
-                .write(true)
-                .create(true)
-                .truncate(true)
-                .open(&path)
-            {
+            if let Ok(h) = std::fs::OpenOptions::new().write(true).open(&path) {
                 let _ = h.set_len(f.size);
             }
         }
@@ -613,6 +611,10 @@ fn manifest_check(state: Arc<State>, req: Request) -> Response {
     let mut verdict = ManifestVerdict::default();
     for (fid, path, size, name) in &slots {
         let Some(expected) = digests.get(fid) else {
+            // No digest for a reserved slot and the session is being
+            // closed: remove the orphaned (never confirmed) reservation
+            // instead of littering the inbox.
+            let _ = std::fs::remove_file(path);
             verdict.results.insert(fid.clone(), "missing".into());
             continue;
         };
@@ -670,23 +672,51 @@ fn read_body(req: Request, max: usize) -> String {
     String::from_utf8_lossy(&buf).into_owned()
 }
 
-/// `name.txt` → `name (2).txt` when `dir/name.txt` already exists.
-fn unique_path(dir: &Path, name: &str) -> PathBuf {
-    let first = dir.join(name);
-    if !first.exists() {
-        return first;
-    }
+/// Reserve `dir/name` for exactly one file: atomically create it with
+/// `O_EXCL` (`create_new`), walking to `name (2)`, `name (3)`, … on
+/// collision. `taken` deduplicates candidates already assigned within the
+/// same prepare (disk state alone cannot see a name another file of the
+/// same session just reserved). Atomic create beats an existence check:
+/// two concurrent sessions racing for the same not-yet-existing name
+/// cannot both win.
+fn reserve_path(
+    dir: &Path,
+    name: &str,
+    taken: &mut std::collections::HashSet<PathBuf>,
+) -> std::io::Result<PathBuf> {
     let (stem, ext) = match name.rsplit_once('.') {
         Some((s, e)) if !s.is_empty() => (s.to_string(), format!(".{e}")),
         _ => (name.to_string(), String::new()),
     };
-    for i in 2..10000 {
-        let cand = dir.join(format!("{stem} ({i}){ext}"));
-        if !cand.exists() {
-            return cand;
+    for i in 1..10000u32 {
+        let cand = if i == 1 {
+            dir.join(name)
+        } else {
+            dir.join(format!("{stem} ({i}){ext}"))
+        };
+        if taken.contains(&cand) {
+            continue;
+        }
+        if let Some(parent) = cand.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        match std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&cand)
+        {
+            Ok(_) => {
+                taken.insert(cand.clone());
+                return Ok(cand);
+            }
+            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
+            Err(e) => return Err(e),
         }
     }
-    dir.join(format!("{stem}.dup{ext}"))
+    Err(std::io::Error::new(
+        std::io::ErrorKind::AlreadyExists,
+        "no free destination name",
+    ))
 }
 
 /// Keep a SocketAddr import warning away (used in handler signatures above).
@@ -711,14 +741,81 @@ mod tests {
     }
 
     #[test]
-    fn test_unique_path() {
-        let d = tmp("uniq");
-        std::fs::write(d.join("a.txt"), b"x").unwrap();
-        assert_eq!(unique_path(&d, "a.txt"), d.join("a (2).txt"));
-        std::fs::write(d.join("a (2).txt"), b"x").unwrap();
-        assert_eq!(unique_path(&d, "a.txt"), d.join("a (3).txt"));
-        assert_eq!(unique_path(&d, "b.txt"), d.join("b.txt"));
+    fn test_reserve_path_dedup_disk_and_concurrent() {
+        let d = tmp("rsv");
+        std::fs::write(d.join("a.txt"), b"x").unwrap(); // existing on disk
+        let mut taken = std::collections::HashSet::new();
+        // First reserve hits the existing file on disk -> (2).
+        assert_eq!(reserve_path(&d, "a.txt", &mut taken).unwrap(), d.join("a (2).txt"));
+        // Same name again in the SAME session: nothing new exists on disk
+        // yet, but the slot is taken -> (3). (This is the collision that
+        // used to let the second upload silently truncate the first.)
+        assert_eq!(reserve_path(&d, "a.txt", &mut taken).unwrap(), d.join("a (3).txt"));
+        // A fresh name reserves the first candidate.
+        assert_eq!(reserve_path(&d, "b.txt", &mut taken).unwrap(), d.join("b.txt"));
+        // Two CONCURRENT sessions (independent taken-sets) racing for the
+        // same not-yet-existing name: the atomic create cannot let both
+        // win — the second walks to (2).
+        let mut t1 = std::collections::HashSet::new();
+        let mut t2 = std::collections::HashSet::new();
+        let p1 = reserve_path(&d, "race.bin", &mut t1).unwrap();
+        let p2 = reserve_path(&d, "race.bin", &mut t2).unwrap();
+        assert_ne!(p1, p2, "concurrent sessions must not share a path");
+        assert!(p1 == d.join("race.bin") || p2 == d.join("race.bin"));
         std::fs::remove_dir_all(&d).ok();
+    }
+
+    /// Regression (Gate 1, CRITICAL): two files in ONE prepare whose names
+    /// collide — by duplicates or after sanitization — must both land
+    /// intact at distinct paths, never one truncating the other.
+    #[test]
+    fn test_prepare_collision_two_files_both_survive() {
+        let work = tmp("collide");
+        let inbox = work.join("inbox");
+        let a = work.join("dirA");
+        let b = work.join("dirB");
+        std::fs::create_dir_all(&inbox).unwrap();
+        std::fs::create_dir_all(&a).unwrap();
+        std::fs::create_dir_all(&b).unwrap();
+        std::fs::write(a.join("dup.txt"), b"ONE-ONE-ONE").unwrap();
+        std::fs::write(b.join("dup.txt"), b"TWO-TWO-TWO").unwrap();
+        let recv = Receiver::start(
+            ReceiverConfig {
+                alias: "t".into(),
+                dest_dir: inbox.clone(),
+                port: 0,
+                auto_accept: true,
+                verify_sha256: false,
+                announce: false,
+                max_streams: 1,
+            },
+            ReceiverHooks::default(),
+        )
+        .unwrap();
+        let addr = format!("127.0.0.1:{}", recv.port());
+        let cfg = SendConfig {
+            dest_dir_hint: String::new(),
+            parallel: 1,
+            verify: false,
+            limit_bps: None,
+            timeout: Duration::from_secs(30),
+            ketra_mode: false,
+        };
+        let cancel = AtomicBool::new(false);
+        let report = send_files(
+            &addr,
+            &[a.join("dup.txt"), b.join("dup.txt")],
+            &cfg,
+            &cancel,
+            &mut |_, _, _| {},
+        )
+        .unwrap();
+        assert_eq!(report.files_sent, 2, "both files must be sent: {report:?}");
+        // Both survive, byte-exact, at distinct paths.
+        assert_eq!(std::fs::read(inbox.join("dup.txt")).unwrap(), b"ONE-ONE-ONE");
+        assert_eq!(std::fs::read(inbox.join("dup (2).txt")).unwrap(), b"TWO-TWO-TWO");
+        recv.stop();
+        std::fs::remove_dir_all(&work).ok();
     }
 
     /// Full loopback: start a receiver, send files with every strategy,

@@ -40,8 +40,10 @@ pub use server::{discover, ReceivedFile, Receiver, ReceiverConfig, ReceiverHooks
 /// Default port (the LocalSend convention).
 pub const LAN_PORT: u16 = 53317;
 
-/// Make a user-supplied file name safe to store:
-/// strips path separators, `..`, control characters and reserved names.
+/// Make a user-supplied file name safe to store: keeps only the final
+/// path component (any `/` or `\` content is dropped), replaces reserved
+/// characters, strips control characters, and prefixes Windows reserved
+/// device names.
 pub struct SecureName;
 
 /// Format object that sanitizes file names (see [`SECURE_NAME`]).
@@ -61,9 +63,36 @@ impl SecureName {
         }
         let trimmed = out.trim().trim_matches('.').to_string();
         if trimmed.is_empty() {
-            "unnamed".to_string()
+            return "unnamed".to_string();
+        }
+        // Windows reserved device names (CON, PRN, AUX, NUL, COM1-9,
+        // LPT1-9 — with or without an extension) are unusable on FAT/NTFS
+        // destinations; prefix them so received files stay extractable
+        // cross-platform.
+        if is_windows_reserved(&trimmed) {
+            format!("_{trimmed}")
         } else {
             trimmed
+        }
+    }
+}
+
+/// Windows reserved device-name check on the stem before the first dot
+/// (`CON`, `con.txt`, `COM1`, `lpt9.tar.gz` …; `COM0`/`LPT0` are NOT
+/// reserved).
+fn is_windows_reserved(name: &str) -> bool {
+    let stem = name.split('.').next().unwrap_or("");
+    if stem.is_empty() {
+        return false;
+    }
+    let up = stem.to_ascii_uppercase();
+    match up.as_str() {
+        "CON" | "PRN" | "AUX" | "NUL" => true,
+        _ => {
+            let b = up.as_bytes();
+            b.len() == 4
+                && (up.starts_with("COM") || up.starts_with("LPT"))
+                && (b'1'..=b'9').contains(&b[3])
         }
     }
 }
@@ -85,6 +114,15 @@ mod tests {
         assert_eq!(SECURE_NAME.replace("..."), "unnamed");
         assert_eq!(SECURE_NAME.replace(""), "unnamed");
         assert_eq!(SECURE_NAME.replace("  spaced  "), "spaced");
+        // Windows reserved device names are prefixed, not dropped.
+        assert_eq!(SECURE_NAME.replace("CON"), "_CON");
+        assert_eq!(SECURE_NAME.replace("con.txt"), "_con.txt");
+        assert_eq!(SECURE_NAME.replace("COM9"), "_COM9");
+        assert_eq!(SECURE_NAME.replace("lpt1.tar.gz"), "_lpt1.tar.gz");
+        assert_eq!(SECURE_NAME.replace("aux"), "_aux");
+        // COM0/LPT0 are not reserved; normal names stay untouched.
+        assert_eq!(SECURE_NAME.replace("com0.bin"), "com0.bin");
+        assert_eq!(SECURE_NAME.replace("console.txt"), "console.txt");
         let ctrl = format!("bad{}\nname", 0x01 as char);
         assert_eq!(SECURE_NAME.replace(&ctrl), "badname");
     }

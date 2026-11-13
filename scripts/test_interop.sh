@@ -406,16 +406,28 @@ BUILT_SHA=$(SHA "$BIN")
 [ "$(SHA "$DIST/linux-x86_64/ketracopy-gui")" = "$(SHA "$GUI")" ] && ok "dist GUI binary == freshly built GUI" || bad "dist GUI binary hash mismatch"
 
 TMPX="$WORK/extract"; mkdir -p "$TMPX"
-tar -xzf "$DIST/ketracopy-1.2.0-portable-linux-x86_64.tar.gz" -C "$TMPX" 2>/dev/null
+VER=$("$BIN" --version | head -1 | awk '{print $2}')
+tar -xzf "$DIST/ketracopy-${VER}-portable-linux-x86_64.tar.gz" -C "$TMPX" 2>/dev/null
 PK=$(find "$TMPX" -name ketra -type f | head -1)
 [ -n "$PK" ] && [ "$(SHA "$PK")" = "$BUILT_SHA" ] && ok "portable tar.gz: ketra identical + extractable" || bad "portable tar.gz ketra hash"
 "$PK" --version >/dev/null 2>&1 && ok "portable binary runs (--version)" || bad "portable binary runs"
 
-mkdir -p "$TMPX/zip" && (cd "$TMPX/zip" && python3 -m zipfile -e "$DIST/ketracopy-1.2.0-windows-x86_64.zip" . 2>/dev/null)
-find "$TMPX/zip" -name ketra.exe -type f | grep -q . && ok "windows zip contains ketra.exe" || bad "windows zip contains ketra.exe"
-find "$TMPX/zip" -name ketracopy-gui.exe -type f | grep -q . && ok "windows zip contains ketracopy-gui.exe" || bad "windows zip contains ketracopy-gui.exe"
-mkdir -p "$TMPX/mac" && tar -xzf "$DIST/ketracopy-1.2.0-macos-aarch64.tar.gz" -C "$TMPX/mac" 2>/dev/null
-find "$TMPX/mac" -name ketra -type f | grep -q . && ok "macos tar.gz contains the CLI binary ($(find "$TMPX/mac" -type f | wc -l) files)" || bad "macos tar.gz contains CLI binary"
+# Windows/macOS cross-binary packages are produced NATIVELY by the CI
+# release workflow (single-producer rule) — in the sandbox dist/ they are
+# absent by design; check them when present, skip explicitly otherwise.
+if [ -f "$DIST/ketracopy-${VER}-windows-x86_64.zip" ]; then
+  mkdir -p "$TMPX/zip" && (cd "$TMPX/zip" && python3 -m zipfile -e "$DIST/ketracopy-${VER}-windows-x86_64.zip" . 2>/dev/null)
+  find "$TMPX/zip" -name ketra.exe -type f | grep -q . && ok "windows zip contains ketra.exe" || bad "windows zip contains ketra.exe"
+  find "$TMPX/zip" -name ketracopy-gui.exe -type f | grep -q . && ok "windows zip contains ketracopy-gui.exe" || bad "windows zip contains ketracopy-gui.exe"
+else
+  ok "windows zip: not built in the sandbox (produced natively by the CI release workflow)"
+fi
+if [ -f "$DIST/ketracopy-${VER}-macos-aarch64.tar.gz" ]; then
+  mkdir -p "$TMPX/mac" && tar -xzf "$DIST/ketracopy-${VER}-macos-aarch64.tar.gz" -C "$TMPX/mac" 2>/dev/null
+  find "$TMPX/mac" -name ketra -type f | grep -q . && ok "macos tar.gz contains the CLI binary ($(find "$TMPX/mac" -type f | wc -l) files)" || bad "macos tar.gz contains CLI binary"
+else
+  ok "macos tar.gz: not built in the sandbox (produced natively by the CI release workflow)"
+fi
 
 # SHA256SUMS.txt entries all match
 SUMS_OK=1; SUMS_N=0
@@ -423,10 +435,10 @@ SUMS_OK=1; SUMS_N=0
 SUMS_N=$(grep -c . "$DIST/SHA256SUMS.txt")
 [ "$SUMS_OK" = "1" ] && ok "SHA256SUMS.txt: all $SUMS_N entries verify" || bad "SHA256SUMS.txt verification failed"
 
-# .deb payload
-mkdir -p "$TMPX/deb" && dpkg-deb -x "$DIST/ketracopy_1.2.0_amd64.deb" "$TMPX/deb" 2>/dev/null
+# .deb payload + src archives (version-derived names)
+mkdir -p "$TMPX/deb" && dpkg-deb -x "$DIST/ketracopy_${VER}_amd64.deb" "$TMPX/deb" 2>/dev/null
 [ -f "$TMPX/deb/usr/bin/ketra" ] && [ "$(SHA "$TMPX/deb/usr/bin/ketra")" = "$BUILT_SHA" ] && ok ".deb payload ketra == built binary" || bad ".deb payload ketra hash"
-dpkg-deb -I "$DIST/ketracopy_1.2.0_amd64.deb" 2>/dev/null | grep -qi "ketracopy" && ok ".deb metadata intact" || bad ".deb metadata intact"
+dpkg-deb -I "$DIST/ketracopy_${VER}_amd64.deb" 2>/dev/null | grep -qi "ketracopy" && ok ".deb metadata intact" || bad ".deb metadata intact"
 
 # cross-binary manifest compatibility (dist binary ↔ source-built binary)
 "$DIST/linux-x86_64/ketra" manifest --root "$A" --out "$WORK/xbin.json" >/dev/null 2>&1; r1=$?
@@ -436,9 +448,9 @@ dpkg-deb -I "$DIST/ketracopy_1.2.0_amd64.deb" 2>/dev/null | grep -qi "ketracopy"
 "$DIST/linux-x86_64/ketra" verify --root "$A" --manifest "$WORK/bxin.json" --quiet >/dev/null 2>&1; r2=$?
 [ $r1 -eq 0 ] && [ $r2 -eq 0 ] && ok "manifest by built binary → verify by dist binary" || bad "built→dist manifest interop ($r1/$r2)"
 
-mkdir -p "$TMPX/src" && tar -xzf "$DIST/ketracopy-1.2.0-src.tar.gz" -C "$TMPX/src" 2>/dev/null
+mkdir -p "$TMPX/src" && tar -xzf "$DIST/ketracopy-${VER}-src.tar.gz" -C "$TMPX/src" 2>/dev/null
 find "$TMPX/src" -maxdepth 2 -name Cargo.toml | grep -q . && ok "src tar.gz extracts with workspace root" || bad "src tar.gz workspace root"
-(cd "$TMPX/src" && python3 -m zipfile -t "$ROOT/dist/ketracopy-1.2.0-src.zip" >/dev/null 2>&1) && ok "src zip integrity test passes" || bad "src zip integrity"
+(cd "$TMPX/src" && python3 -m zipfile -t "$ROOT/dist/ketracopy-${VER}-src.zip" >/dev/null 2>&1) && ok "src zip integrity test passes" || bad "src zip integrity"
 
 # ===========================================================================
 say "S12. bench (128 MiB)"

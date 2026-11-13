@@ -203,6 +203,13 @@ pub fn copy_file(
                 return Ok(stats);
             }
             Ok(CloneOutcome::NotSupported) => {}
+            // `create_new` semantics: the destination already exists (an
+            // overwrite resolved by the conflict policy — `--conflict
+            // overwrite`, the GUI's overwrite-all — or a create race).
+            // Fall through to the streaming path, which opens with plain
+            // create/truncate semantics (recorded defect fix: this used to
+            // fail the whole file with EEXIST).
+            Err(e) if e.kind() == io::ErrorKind::AlreadyExists => {}
             Err(e) => return Err(Error::ioctx(dst, e)),
         }
     }
@@ -272,6 +279,8 @@ pub fn copy_file(
     };
 
     let chunk = opts.chunk() as usize;
+    // Set when the source reads shorter than the planned extent mid-copy.
+    let mut src_shrank = false;
     let mut buf = AlignedBuf::new(chunk);
     // Inline-verify read-back buffer: only allocated when verification is
     // actually requested (one allocation less per file otherwise).
@@ -377,8 +386,14 @@ pub fn copy_file(
                 let src_chunk =
                     read_exact_at(&srcf, buf.as_mut(len - moved), off + moved as u64, retries)?;
                 if src_chunk == 0 && moved == 0 {
+                    // Source shrank below the planned extent mid-copy.
+                    // Zero-padding to the planned size (set_len) would
+                    // silently corrupt the destination and journal it
+                    // `done`; fail loudly instead and keep the partial
+                    // (plus journal partials) for --resume.
+                    src_shrank = true;
                     hit_eof = true;
-                    break; // source shrank below the planned extent
+                    break;
                 }
                 let zero_run = !CAN_SCAN
                     && opts.use_sparse
@@ -421,13 +436,20 @@ pub fn copy_file(
                 }
             }
 
-            // ---- journal after the data is on disk ----
-            // `partial` records are batched (see JOURNAL_BATCH): the resume
-            // probe re-verifies content, so a lagging bound is always safe.
-            // The `done` record is written once at finalize.
+            // ---- journal after the data is durable ----
+            // `partial` records are batched (see JOURNAL_BATCH), but a
+            // bound may only become durable AFTER the data it covers:
+            // sync before every batched record. fdatasync/fsync flush
+            // every dirty page of the file — including writes from a
+            // previous crashed run — so any recoverable `partial` bound
+            // implies all bytes below it are on the media, and the resume
+            // probe can trust the bound (its tail check then only guards
+            // against journal/disk corruption). The `done` record is
+            // written once at finalize, after the full-file sync below.
             pos = off + moved as u64;
             if let Some(j) = journal {
                 if !journaled_first || pos - last_journaled >= JOURNAL_BATCH {
+                    sync_dst(&dstf, dst)?;
                     j.record(&JournalEntry {
                         rel: rel.to_string(),
                         size,
@@ -473,6 +495,8 @@ pub fn copy_file(
         // re-verifies content regardless).
         if let Some(j) = journal {
             if pos > last_journaled {
+                // Same durability invariant: sync data before the record.
+                let _ = sync_dst(&dstf, dst);
                 let _ = j.record(&JournalEntry {
                     rel: rel.to_string(),
                     size,
@@ -484,6 +508,18 @@ pub fn copy_file(
         }
         stats.canceled_at = Some(pos);
         return Err(Error::Canceled);
+    }
+
+    if src_shrank {
+        // Fail loudly: the destination is a partial copy of a now-shorter
+        // source. Leave it (and any journal partials) for --resume, which
+        // re-probes content and restarts the file when the source is
+        // shorter than the destination.
+        return Err(Error::Shrank {
+            path: rel.to_string(),
+            copied: pos,
+            planned: size,
+        });
     }
 
     // ---- finalize: extend/truncate to the exact logical size ----
@@ -520,6 +556,16 @@ pub fn copy_file(
         })?;
     }
     Ok(stats)
+}
+
+/// Flush destination data (Linux: fdatasync; elsewhere: fsync) so journal
+/// bounds only ever become durable after the data they cover.
+fn sync_dst(dstf: &File, dst: &Path) -> Result<()> {
+    #[cfg(target_os = "linux")]
+    let r = dstf.sync_data();
+    #[cfg(not(target_os = "linux"))]
+    let r = dstf.sync_all();
+    r.map_err(|e| Error::ioctx(dst, e))
 }
 
 /// `copy_file_range` rejections that mean "unsupported here", not "error".
@@ -767,6 +813,95 @@ mod tests {
         assert!(dst2.exists(), "canceled copy must keep the partial file");
         let entries = crate::journal::load(&jpath).unwrap();
         assert_eq!(entries.len(), 2, "no record added for a zero-progress file");
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    /// Overwriting an existing destination must not die on the reflink
+    /// fast path (`create_new` → EEXIST) — it must fall through to the
+    /// streaming path (found while fixing the Gate-1 `--no-times` defect,
+    /// which used to mask it by skipping).
+    #[test]
+    fn test_overwrite_existing_dst_with_clone_falls_through() {
+        let dir = tmp("ovw");
+        let src = dir.join("s.bin");
+        std::fs::write(&src, b"NEW-DATA-8").unwrap();
+        let dst = dir.join("out.bin");
+        std::fs::write(&dst, b"OLD").unwrap();
+        copy_file(
+            &src, &dst,
+            &Options { use_clone: true, ..Options::default() },
+            &mut SpeedController::new(None), &AtomicBool::new(false),
+            None, "s.bin", 0, &mut |_| {}, None,
+        )
+        .unwrap();
+        assert_eq!(std::fs::read(&dst).unwrap(), b"NEW-DATA-8");
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    /// A source that shrinks below its planned extent mid-copy must fail
+    /// loudly — never zero-pad to the planned size and journal it `done`.
+    #[test]
+    fn test_source_shrink_fails_loudly() {
+        let dir = tmp("shrink");
+        let src = dir.join("s.bin");
+        // Dense 3 MiB: three 1 MiB chunks (default chunk).
+        std::fs::write(&src, vec![7u8; 3 * 1024 * 1024]).unwrap();
+        let jpath = dir.join(".ketracopy-journal.jsonl");
+        let j = JournalHandle::new(Journal::open(&jpath).unwrap());
+        let dst = dir.join("out.bin");
+        // Shrink the source to 1.5 MiB while the first chunk is being
+        // reported: the next read hits EOF before the planned extent.
+        let src2 = src.clone();
+        let mut shrank = false;
+        let r = copy_file(
+            &src, &dst,
+            &Options { use_clone: false, ..Options::default() },
+            &mut SpeedController::new(None), &AtomicBool::new(false),
+            Some(&j), "s.bin", 0,
+            &mut |_| {
+                if !shrank {
+                    shrank = true;
+                    let f = std::fs::OpenOptions::new().write(true).open(&src2).unwrap();
+                    f.set_len(1536 * 1024).unwrap();
+                }
+            },
+            None,
+        );
+        let err = match r {
+            Err(e) => e,
+            Ok(_) => panic!("expected Error::Shrank, got Ok"),
+        };
+        match &err {
+            Error::Shrank { copied, planned, .. } => {
+                assert_eq!(*planned, 3 * 1024 * 1024);
+                assert!(*copied >= 1024 * 1024, "copied={copied}");
+            }
+            other => panic!("expected Error::Shrank, got {other:?}"),
+        }
+        // The destination is preallocated to the planned size up front, so
+        // its length alone says nothing — the meaningful guarantees are the
+        // loud error, no `done` record, and a resume that restarts a file
+        // longer than its (now shorter) source.
+        assert!(
+            matches!(err, Error::Shrank { .. }),
+            "shrink must surface as Error::Shrank"
+        );
+        // No `done` record for the shrunken file.
+        let entries = crate::journal::load(&jpath).unwrap();
+        assert!(
+            entries.iter().all(|e| e.status != "done"),
+            "no done record after shrink: {entries:?}"
+        );
+        // A fresh copy of the (now shorter) source succeeds and is exact.
+        let dst2 = dir.join("out2.bin");
+        copy_file(
+            &src, &dst2,
+            &Options { use_clone: false, ..Options::default() },
+            &mut SpeedController::new(None), &AtomicBool::new(false),
+            None, "s.bin", 0, &mut |_| {}, None,
+        )
+        .unwrap();
+        assert_eq!(std::fs::metadata(&dst2).unwrap().len(), 1536 * 1024);
         std::fs::remove_dir_all(&dir).ok();
     }
 }

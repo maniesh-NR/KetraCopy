@@ -446,6 +446,11 @@ impl ClientResponse {
     }
 }
 
+/// Sanity cap for client-side response bodies: API responses are small
+/// JSON documents (the largest legitimate one is the prepare-upload
+/// reply), so anything beyond this is a hostile or broken peer.
+const MAX_RESPONSE_BODY: u64 = 8 * 1024 * 1024;
+
 fn read_client_response(stream: &mut TcpStream) -> std::io::Result<ClientResponse> {
     let mut status = 0u16;
     let mut headers = Vec::new();
@@ -468,6 +473,15 @@ fn read_client_response(stream: &mut TcpStream) -> std::io::Result<ClientRespons
         .find(|(k, _)| k == "content-length")
         .and_then(|(_, v)| v.parse().ok())
         .unwrap_or(0);
+    // A peer announcing a giant body is hostile or broken: refuse instead
+    // of pre-allocating the announced size — a lying header could abort
+    // the whole process, and on 32-bit hosts `len as usize` would wrap.
+    if len > MAX_RESPONSE_BODY {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            format!("response Content-Length {len} exceeds the {MAX_RESPONSE_BODY}-byte limit"),
+        ));
+    }
     let mut body = vec![0u8; len as usize];
     let mut read = 0usize;
     while read < body.len() {
@@ -558,6 +572,36 @@ mod tests {
         assert_eq!(url_decode("caf%C3%A9", false), "café");
         assert_eq!(url_decode("100%", false), "100%");
         assert_eq!(url_decode("d%2", false), "d%2");
+    }
+
+    #[test]
+    fn test_client_refuses_huge_content_length() {
+        // A hostile/broken peer announcing a giant Content-Length must get
+        // a clean error, not an unbounded pre-allocation.
+        use std::io::Write as _;
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = listener.local_addr().unwrap().port();
+        let t = std::thread::spawn(move || {
+            let (mut sock, _) = listener.accept().unwrap();
+            let mut buf = [0u8; 4096];
+            let _ = sock.read(&mut buf); // request head/body
+            let resp = "HTTP/1.1 200 OK\r\nContent-Length: 999999999999\r\nContent-Type: application/json\r\n\r\n";
+            sock.write_all(resp.as_bytes()).unwrap();
+        });
+        let r = request(
+            &format!("127.0.0.1:{port}"),
+            "GET",
+            "/api/localsend/v2/info",
+            &[],
+            b"",
+            Duration::from_secs(5),
+        );
+        t.join().unwrap();
+        let err = match r {
+            Err(e) => e,
+            Ok(_) => panic!("huge Content-Length must be refused"),
+        };
+        assert!(err.contains("Content-Length"), "unexpected error: {err}");
     }
 
     #[test]

@@ -1192,18 +1192,18 @@ dependencies = [
 
 [[package]]
 name = "ketra-cli"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "ketra-core",
 ]
 
 [[package]]
 name = "ketra-core"
-version = "1.2.0"
+version = "1.2.1"
 
 [[package]]
 name = "ketra-gui"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "eframe",
  "egui",
@@ -1213,7 +1213,7 @@ dependencies = [
 
 [[package]]
 name = "ketra-md3"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "egui",
 ]

@@ -1,0 +1,80 @@
+
+== fixture tree ==
+  PASS fixture created
+
+== 1. copy + inline verify + exclude filter (dir contents land in dst root) ==
+  PASS copy exits 0
+  PASS structure preserved
+  PASS exclude filter applied
+  PASS bit-identical after inline verify
+
+== 2. manifest write + verify + bit-rot detection ==
+  PASS manifest command exits 0
+  PASS manifest written
+  PASS manifest verify clean
+  PASS verify exit 4 on corruption
+  PASS corrupt file listed (see output above)
+
+== 3. sparse preservation ==
+  PASS dest blocks 16 <= src blocks 16
+
+== 4. test command (read-test through the hash path) ==
+  PASS test healthy file exits 0
+  PASS test with explicit algorithm exits 0
+
+== 5. move (copy + source removal) ==
+  PASS move exits 0
+  PASS source removed, dest present
+
+== 6. speed limit (4 MiB file at 1 MiB/s -> ~2s after the 2s burst allowance) ==
+  PASS 1 MiB/s limit held (took 2003ms)
+
+== 7. interrupt → journal → resume ==
+  PASS journal present after interrupt
+  PASS resume run exits 0
+  PASS resumed tree byte-identical
+
+== 8. flatten + include filter ==
+  PASS flatten copy exits 0
+  PASS flattened + filtered
+
+== 9. conflict: skip policy ==
+  PASS existing file untouched
+
+== 10. conflict: rename policy ==
+  PASS renamed to 'readme (2).txt'
+
+== 11. conflict: keep-newer policy ==
+  PASS keep-newer run exits 0
+  PASS older source skipped
+
+== 12. dry run ==
+  PASS dry-run exits 0
+  PASS dry-run wrote nothing
+
+== 13. bench ==
+  PASS bench exits 0
+
+== 14. JSON progress stream ==
+  PASS JSONL progress emits finished event
+
+== 15. shell surface: config / status / clip graceful errors ==
+  PASS config exits 0
+  PASS shell status exits 0
+  PASS clip put errors cleanly without X11
+  PASS clip get errors cleanly without X11
+  PASS clip get --json errors cleanly without X11
+
+== 16. usage / version / verify levels ==
+  PASS --version exits 0
+  PASS --verify off accepted
+  PASS --verify manifest accepted
+  PASS manifest mode wrote manifest
+  PASS missing source errors out
+
+== 17. --no-times must not skip a same-size modified file (Gate 1 fix) ==
+  FAIL --no-times re-copy exits 0
+  FAIL --no-times re-copied the modified file (no size-only skip)
+
+== summary ==
+  PASS: 39   FAIL: 2

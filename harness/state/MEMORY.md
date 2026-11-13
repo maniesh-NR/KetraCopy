@@ -8,7 +8,7 @@
 
 - **Project**: KetraCopy — fast, verifiable, resumable file transfer
   (TeraCopy-style clean-room engine), MIT license.
-- **Version**: 1.2.0 (full history in `CHANGELOG.md`).
+- **Version**: 1.2.1 (full history in `CHANGELOG.md`).
 - **Local workspace**: `/home/z/my-project/download/ketracopy`
   (git repo, branch `main`).
 - **GitHub**: `https://github.com/maniesh-NR/KetraCopy` (public; canonical
@@ -67,17 +67,20 @@
 
 ### Cross builds (Windows / macOS)
 
-`cargo zigbuild` with a rootless zig install:
-
-1. Download a zig release tarball (ziglang.org) into
-   `/home/z/my-project/tools/zig`, put `zig` on PATH.
-2. `cargo install cargo-zigbuild --locked`.
-3. `cargo zigbuild --release --workspace --target x86_64-pc-windows-gnu`
-   (and `i686-pc-windows-gnu`, `x86_64-apple-darwin`, `aarch64-apple-darwin`;
-   macOS targets need an Apple SDK directory — see `docs/BUILD.md`).
-4. Note: `.cargo/config.toml` pins mingw linkers for `*-pc-windows-gnu`
-   (used by plain cross builds); cargo-zigbuild supplies its own linker —
-   if they conflict, override via CLI/env for the zigbuild invocation.
+**Decision (2026-11-13): release binaries for Windows (msvc, x86_64 +
+i686, CLI + GUI) and macOS (CLI, both darwin targets) are built NATIVELY
+by the CI release workflow (`.github/workflows/release.yml`) —
+single-producer rule; the sandbox produces only Linux + src artifacts.**
+A sandbox zigbuild cross-compile was attempted (zig 0.13.0 +
+cargo-zigbuild 0.24.1, rootless under `/home/z/my-project/tools/`) and
+abandoned after 4 attempts: zig's linker rejects rustc's mingw link line
+(evidence: `harness/evidence/2026-11-13-S7/zigbuild-*.log`). The
+filtering linker wrappers survive at `/home/z/my-project/tools/zigwrap-*.sh`
+if the attempt is ever resumed. Sandbox-side verification of the
+cross targets: `cargo check --workspace --target <windows triple>` (green)
+and `cargo check -p ketra-cli --target <darwin triple>` (green; the macOS
+GUI check FAILS on modern rustc — locked `objc2 0.4.1`, no semver fix
+exists per `cargo update -p objc2@0.4.1 --dry-run`; macOS GUI deferred).
 
 ## Structure map
 

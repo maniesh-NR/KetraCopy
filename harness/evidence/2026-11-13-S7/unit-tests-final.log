@@ -1,0 +1,715 @@
+warning: unused field `rust-version` in `workspace.package`
+  --> Cargo.toml:16:1
+   |
+16 | rust-version = "1.75"
+   | ^^^^^^^^^^^^
+   |
+   = note: `cargo::unused_workspace_package_fields` is set to `warn` by default
+help: consider removing the field `workspace.package.rust-version`
+warning: workspace (manifest) generated 1 warning
+   Compiling ketra-core v1.2.1 (/home/z/my-project/download/ketracopy/crates/ketra-core)
+   Compiling ketra-md3 v1.2.1 (/home/z/my-project/download/ketracopy/crates/ketra-md3)
+warning: unused label
+   --> crates/ketra-core/src/engine.rs:203:13
+    |
+203 |             'tasks: for (i, task) in plan.tasks.iter_mut().enumerate() {
+    |             ^^^^^^
+    |
+    = note: `#[warn(unused_labels)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `CLASS_IN`
+  --> crates/ketra-core/src/lan/mdns.rs:46:36
+   |
+46 |     use super::{CLASS_CACHE_FLUSH, CLASS_IN};
+   |                                    ^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unexpected `cfg` condition value: `mdns_debug`
+   --> crates/ketra-core/src/lan/mdns.rs:727:17
+    |
+727 |         if cfg!(feature = "mdns_debug") || std::env::var_os("KETRA_MDNS_DEBUG").is_some() {
+    |                 ^^^^^^^^^^^^^^^^^^^^^^ help: remove the condition
+    |
+    = note: no expected values for `feature`
+    = help: consider adding `mdns_debug` as a feature in `Cargo.toml`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: `#[warn(unexpected_cfgs)]` on by default
+
+warning: unused import: `FromRawFd`
+ --> crates/ketra-core/src/platform/linux.rs:7:28
+  |
+7 | use std::os::fd::{AsRawFd, FromRawFd, RawFd};
+  |                            ^^^^^^^^^
+
+warning: type `c_int` should have an upper camel case name
+  --> crates/ketra-core/src/platform/linux.rs:30:6
+   |
+30 | type c_int = std::os::raw::c_int;
+   |      ^^^^^ help: convert the identifier to upper camel case: `CInt`
+   |
+   = note: `#[warn(non_camel_case_types)]` (part of `#[warn(nonstandard_style)]`) on by default
+
+warning: type `c_uint` should have an upper camel case name
+  --> crates/ketra-core/src/platform/linux.rs:31:6
+   |
+31 | type c_uint = std::os::raw::c_uint;
+   |      ^^^^^^ help: convert the identifier to upper camel case: `CUint`
+
+warning: type `c_ulong` should have an upper camel case name
+  --> crates/ketra-core/src/platform/linux.rs:32:6
+   |
+32 | type c_ulong = std::os::raw::c_ulong;
+   |      ^^^^^^^ help: convert the identifier to upper camel case: `CUlong`
+
+warning: type `c_char` should have an upper camel case name
+  --> crates/ketra-core/src/platform/linux.rs:33:6
+   |
+33 | type c_char = std::os::raw::c_char;
+   |      ^^^^^^ help: convert the identifier to upper camel case: `CChar`
+
+warning: unused import: `std::os::unix::fs::FileExt`
+  --> crates/ketra-core/src/resume.rs:32:9
+   |
+32 |     use std::os::unix::fs::FileExt;
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Json`
+ --> crates/ketra-core/src/settings.rs:4:25
+  |
+4 | use crate::json::{self, Json};
+  |                         ^^^^
+
+warning: unused import: `crate::hash::Hasher`
+ --> crates/ketra-core/src/options.rs:3:5
+  |
+3 | use crate::hash::Hasher;
+  |     ^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `b2`
+   --> crates/ketra-core/src/lan/server.rs:169:17
+    |
+169 |             let b2 = base.to_string();
+    |                 ^^ help: if this is intentional, prefix it with an underscore: `_b2`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> crates/ketra-core/src/netmode.rs:217:17
+    |
+217 |             let mut times = std::fs::FileTimes::new();
+    |                 ----^^^^^
+    |                 |
+    |                 help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> crates/ketra-core/src/pipeline.rs:299:9
+    |
+299 |     let mut zero_buf: Vec<u8> = if hasher.is_some() { vec![0u8; chunk] } else { Vec::new() };
+    |         ----^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+
+warning: unused variable: `e`
+   --> crates/ketra-core/src/pipeline.rs:372:29
+    |
+372 |                         Err(e) => {
+    |                             ^ help: if this is intentional, prefix it with an underscore: `_e`
+
+warning: variable does not need to be mutable
+   --> crates/ketra-core/src/pipeline.rs:696:17
+    |
+696 |             let mut times = std::fs::FileTimes::new();
+    |                 ----^^^^^
+    |                 |
+    |                 help: remove this `mut`
+
+warning: unused variable: `root`
+   --> crates/ketra-core/src/plan.rs:104:5
+    |
+104 |     root: &Path,
+    |     ^^^^ help: if this is intentional, prefix it with an underscore: `_root`
+
+warning: field `dest_dir` is never read
+  --> crates/ketra-core/src/lan/server.rs:86:5
+   |
+85 | struct Session {
+   |        ------- field in this struct
+86 |     dest_dir: PathBuf,
+   |     ^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `POSIX_FADV_DONTNEED` is never used
+  --> crates/ketra-core/src/platform/linux.rs:41:7
+   |
+41 | const POSIX_FADV_DONTNEED: c_int = 4;
+   |       ^^^^^^^^^^^^^^^^^^^
+
+warning: unused `FileTimes` that must be used
+   --> crates/ketra-core/src/netmode.rs:218:13
+    |
+218 |             times.set_modified(mtime);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: must be applied to a file via `File::set_times` to have any effect
+    = note: `#[warn(unused_must_use)]` (part of `#[warn(unused)]`) on by default
+help: use `let _ = ...` to ignore the resulting value
+    |
+218 |             let _ = times.set_modified(mtime);
+    |             +++++++
+
+warning: unused `FileTimes` that must be used
+   --> crates/ketra-core/src/netmode.rs:220:17
+    |
+220 |                 times.set_accessed(atime);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: must be applied to a file via `File::set_times` to have any effect
+help: use `let _ = ...` to ignore the resulting value
+    |
+220 |                 let _ = times.set_accessed(atime);
+    |                 +++++++
+
+warning: unused `FileTimes` that must be used
+   --> crates/ketra-core/src/pipeline.rs:697:13
+    |
+697 |             times.set_modified(mtime);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: must be applied to a file via `File::set_times` to have any effect
+help: use `let _ = ...` to ignore the resulting value
+    |
+697 |             let _ = times.set_modified(mtime);
+    |             +++++++
+
+warning: unused `FileTimes` that must be used
+   --> crates/ketra-core/src/pipeline.rs:699:17
+    |
+699 |                 times.set_accessed(atime);
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: must be applied to a file via `File::set_times` to have any effect
+help: use `let _ = ...` to ignore the resulting value
+    |
+699 |                 let _ = times.set_accessed(atime);
+    |                 +++++++
+
+warning: unused import: `std::io::Write as _`
+   --> crates/ketra-core/src/lan/server.rs:734:9
+    |
+734 |     use std::io::Write as _;
+    |         ^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `std::os::unix::io::AsRawFd`
+   --> crates/ketra-core/src/platform/linux.rs:324:9
+    |
+324 |     use std::os::unix::io::AsRawFd;
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: unused variable: `addr`
+   --> crates/ketra-core/src/lan/server.rs:953:13
+    |
+953 |         let addr = format!("127.0.0.0.1:{}", recv.port());
+    |             ^^^^ help: if this is intentional, prefix it with an underscore: `_addr`
+
+warning: constant `SEEK_DATA` is never used
+   --> crates/ketra-core/src/platform/linux.rs:329:11
+    |
+329 |     const SEEK_DATA: i32 = 3;
+    |           ^^^^^^^^^
+
+warning: constant `SEEK_HOLE` is never used
+   --> crates/ketra-core/src/platform/linux.rs:330:11
+    |
+330 |     const SEEK_HOLE: i32 = 4;
+    |           ^^^^^^^^^
+
+warning: function `lseek` is never used
+   --> crates/ketra-core/src/platform/linux.rs:327:12
+    |
+327 |         fn lseek(fd: i32, off: i64, whence: i32) -> i64;
+    |            ^^^^^
+
+warning: `ketra-core` (lib) generated 23 warnings (run `cargo fix --lib -p ketra-core` to apply 10 suggestions)
+   Compiling ketra-cli v1.2.1 (/home/z/my-project/download/ketracopy/crates/ketra-cli)
+warning: unused import: `std::time::Duration`
+ --> crates/ketra-cli/src/args.rs:4:5
+  |
+4 | use std::time::Duration;
+  |     ^^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> crates/ketra-cli/src/args.rs:239:17
+    |
+239 |             let mut i = 0;
+    |                 ----^
+    |                 |
+    |                 help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: variable does not need to be mutable
+   --> crates/ketra-cli/src/args.rs:423:25
+    |
+423 |                     let mut i = 1;
+    |                         ----^
+    |                         |
+    |                         help: remove this `mut`
+
+warning: unused variable: `i`
+   --> crates/ketra-cli/src/args.rs:239:17
+    |
+239 |             let mut i = 0;
+    |                 ^^^^^ help: if this is intentional, prefix it with an underscore: `_i`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `i`
+   --> crates/ketra-cli/src/args.rs:423:25
+    |
+423 |                     let mut i = 1;
+    |                         ^^^^^ help: if this is intentional, prefix it with an underscore: `_i`
+
+warning: unused variable: `no_manifest`
+  --> crates/ketra-cli/src/lan.rs:79:5
+   |
+79 |     no_manifest: bool,
+   |     ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_no_manifest`
+
+warning: field `common` is never read
+  --> crates/ketra-cli/src/args.rs:97:49
+   |
+97 |     Test { sources: Vec<PathBuf>, hash: String, common: CommonArgs },
+   |     ---- field in this variant                  ^^^^^^
+   |
+   = note: `Command` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `hostname_string_pub` is never used
+   --> crates/ketra-cli/src/args.rs:561:8
+    |
+561 | pub fn hostname_string_pub() -> String {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `default_manifest_path` is never used
+  --> crates/ketra-cli/src/manifest_cmd.rs:91:8
+   |
+91 | pub fn default_manifest_path(root: &Path) -> PathBuf {
+   |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `have` is never used
+  --> crates/ketra-cli/src/shell.rs:36:4
+   |
+36 | fn have(cmd: &str) -> bool {
+   |    ^^^^
+
+warning: function `detect_plain` is never used
+   --> crates/ketra-cli/src/view.rs:165:8
+    |
+165 | pub fn detect_plain(explicit_plain: bool) -> bool {
+    |        ^^^^^^^^^^^^
+
+warning: structure field `XOpenDisplay` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:799:9
+    |
+799 |         XOpenDisplay: unsafe extern "C" fn(*const c_char) -> *mut XDisplay,
+    |         ^^^^^^^^^^^^ help: convert the identifier to snake case: `xopen_display`
+    |
+    = note: `#[warn(non_snake_case)]` (part of `#[warn(nonstandard_style)]`) on by default
+
+warning: structure field `XCloseDisplay` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:800:9
+    |
+800 |         XCloseDisplay: unsafe extern "C" fn(*mut XDisplay) -> c_int,
+    |         ^^^^^^^^^^^^^ help: convert the identifier to snake case: `xclose_display`
+
+warning: structure field `XDefaultRootWindow` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:801:9
+    |
+801 |         XDefaultRootWindow: unsafe extern "C" fn(*mut XDisplay) -> Window,
+    |         ^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `xdefault_root_window`
+
+warning: structure field `XCreateSimpleWindow` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:802:9
+    |
+802 |         XCreateSimpleWindow: unsafe extern "C" fn(
+    |         ^^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `xcreate_simple_window`
+
+warning: structure field `XDestroyWindow` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:813:9
+    |
+813 |         XDestroyWindow: unsafe extern "C" fn(*mut XDisplay, Window) -> c_int,
+    |         ^^^^^^^^^^^^^^ help: convert the identifier to snake case: `xdestroy_window`
+
+warning: structure field `XSetSelectionOwner` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:814:9
+    |
+814 |         XSetSelectionOwner: unsafe extern "C" fn(*mut XDisplay, Atom, Window, Time) -> c_int,
+    |         ^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `xset_selection_owner`
+
+warning: structure field `XGetSelectionOwner` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:815:9
+    |
+815 |         XGetSelectionOwner: unsafe extern "C" fn(*mut XDisplay, Atom) -> Window,
+    |         ^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `xget_selection_owner`
+
+warning: structure field `XInternAtom` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:816:9
+    |
+816 |         XInternAtom: unsafe extern "C" fn(*mut XDisplay, *const c_char, c_int) -> Atom,
+    |         ^^^^^^^^^^^ help: convert the identifier to snake case: `xintern_atom`
+
+warning: structure field `XChangeProperty` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:817:9
+    |
+817 |         XChangeProperty: unsafe extern "C" fn(
+    |         ^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `xchange_property`
+
+warning: structure field `XSendEvent` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:827:9
+    |
+827 |         XSendEvent: unsafe extern "C" fn(*mut XDisplay, Window, c_int, c_long, *mut XEvent) -> c_int,
+    |         ^^^^^^^^^^ help: convert the identifier to snake case: `xsend_event`
+
+warning: structure field `XNextEvent` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:828:9
+    |
+828 |         XNextEvent: unsafe extern "C" fn(*mut XDisplay, *mut XEvent) -> c_int,
+    |         ^^^^^^^^^^ help: convert the identifier to snake case: `xnext_event`
+
+warning: structure field `XPending` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:829:9
+    |
+829 |         XPending: unsafe extern "C" fn(*mut XDisplay) -> c_int,
+    |         ^^^^^^^^ help: convert the identifier to snake case: `xpending`
+
+warning: structure field `XFlush` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:830:9
+    |
+830 |         XFlush: unsafe extern "C" fn(*mut XDisplay) -> c_int,
+    |         ^^^^^^ help: convert the identifier to snake case (notice the capitalization): `xflush`
+
+warning: structure field `XConvertSelection` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:831:9
+    |
+831 |         XConvertSelection: unsafe extern "C" fn(*mut XDisplay, Atom, Atom, Atom, Window, Time) -> c_int,
+    |         ^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `xconvert_selection`
+
+warning: structure field `XGetWindowProperty` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:832:9
+    |
+832 |         XGetWindowProperty: unsafe extern "C" fn(
+    |         ^^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `xget_window_property`
+
+warning: structure field `XFree` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:846:9
+    |
+846 |         XFree: unsafe extern "C" fn(*mut u8) -> c_int,
+    |         ^^^^^ help: convert the identifier to snake case (notice the capitalization): `xfree`
+
+warning: structure field `XConnectionNumber` should have a snake case name
+   --> crates/ketra-cli/src/clip.rs:849:9
+    |
+849 |         XConnectionNumber: unsafe extern "C" fn(*mut XDisplay) -> c_int,
+    |         ^^^^^^^^^^^^^^^^^ help: convert the identifier to snake case: `xconnection_number`
+
+warning: `ketra-cli` (bin "ketra" test) generated 28 warnings (run `cargo fix --bin "ketra" -p ketra-cli --tests` to apply 6 suggestions)
+   Compiling ketra-gui v1.2.1 (/home/z/my-project/download/ketracopy/crates/ketra-gui)
+warning: unused import: `color`
+  --> crates/ketra-gui/src/main.rs:20:17
+   |
+20 | use ketra_md3::{color, components, theme};
+   |                 ^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `path`
+   --> crates/ketra-gui/src/main.rs:188:24
+    |
+188 |         Event::Error { path, message } => p.failed += 1,
+    |                        ^^^^ help: try ignoring the field: `path: _`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `message`
+   --> crates/ketra-gui/src/main.rs:188:30
+    |
+188 |         Event::Error { path, message } => p.failed += 1,
+    |                              ^^^^^^^ help: try ignoring the field: `message: _`
+
+warning: variable does not need to be mutable
+   --> crates/ketra-gui/src/main.rs:416:13
+    |
+416 |         let mut s = Settings2::load();
+    |             ----^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `kind`, `sources`, and `dest` are never read
+  --> crates/ketra-gui/src/main.rs:87:5
+   |
+86 | struct Job {
+   |        --- fields in this struct
+87 |     kind: TransferKind,
+   |     ^^^^
+88 |     sources: Vec<PathBuf>,
+   |     ^^^^^^^
+89 |     dest: PathBuf,
+   |     ^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `fingerprint` is never read
+   --> crates/ketra-gui/src/main.rs:227:5
+    |
+223 | struct PeerRow {
+    |        ------- field in this struct
+...
+227 |     fingerprint: String,
+    |     ^^^^^^^^^^^
+    |
+    = note: `PeerRow` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: method `start_receive` is never used
+   --> crates/ketra-gui/src/main.rs:317:8
+    |
+241 | impl LanState {
+    | ------------- method in this implementation
+...
+317 |     fn start_receive(&mut self, dest: PathBuf) {
+    |        ^^^^^^^^^^^^^
+
+warning: method `apply_theme_now` is never used
+   --> crates/ketra-gui/src/main.rs:539:8
+    |
+414 | impl KetraApp {
+    | ------------- method in this implementation
+...
+539 |     fn apply_theme_now(&mut self, ctx: &egui::Context) {
+    |        ^^^^^^^^^^^^^^^
+
+warning: struct `LanSelectedSlot` is never constructed
+    --> crates/ketra-gui/src/main.rs:1352:8
+     |
+1352 | struct LanSelectedSlot(Option<usize>);
+     |        ^^^^^^^^^^^^^^^
+
+warning: direct cast of function item into an integer
+   --> crates/ketra-gui/src/main.rs:213:31
+    |
+213 |             signal(2, handler as usize);
+    |                               ^^^^^^^^
+    |
+    = note: `#[warn(function_casts_as_integer)]` on by default
+help: first cast to a pointer `as *const ()`
+    |
+213 |             signal(2, handler as *const () as usize);
+    |                               ++++++++++++
+
+warning: `ketra-gui` (bin "ketracopy-gui" test) generated 10 warnings (run `cargo fix --bin "ketracopy-gui" -p ketra-gui --tests` to apply 5 suggestions)
+warning: `ketra-core` (lib test) generated 28 warnings (22 duplicates) (run `cargo fix --lib -p ketra-core --tests` to apply 3 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.99s
+     Running unittests src/main.rs (target/debug/build/ketra-cli/9750fe4c976e44e9/out/ketra-9750fe4c976e44e9)
+
+running 20 tests
+test args::tests::test_clip_put ... ok
+test args::tests::test_clip_paste_needs_dest ... ok
+test args::tests::test_copy_requires_dest ... ok
+test args::tests::test_move_and_flags ... ok
+test args::tests::test_shell_targets ... ok
+test args::tests::test_size_suffixes ... ok
+test args::tests::test_test_hash ... ok
+test args::tests::test_verify_aliases ... ok
+test clip::tests::test_drop_effect ... ok
+test clip::tests::test_absolutize_relative ... ok
+test clip::tests::test_dropfiles_ansi_fallback ... ok
+test clip::tests::test_dropfiles_roundtrip ... ok
+test clip::tests::test_dropfiles_garbage ... ok
+test clip::tests::test_uri_list_ignores_comments_and_blanks ... ok
+test clip::tests::test_gnome_files_roundtrip_both_modes ... ok
+test clip::tests::test_uri_list_roundtrip ... ok
+test view::tests::test_human_units ... ok
+test view::tests::test_quiet_renders_only_summary ... ok
+test view::tests::test_short_truncates ... ok
+test run_cmd::tests::settings_propagate_and_flags_win ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/build/ketra-core/c40ba1c35da85be6/out/ketra_core-c40ba1c35da85be6)
+
+running 89 tests
+test aimd::tests::test_bounds_are_respected ... ok
+test aimd::tests::test_additive_increase_is_linear ... ok
+test aimd::tests::test_multiplicative_decrease_halves ... ok
+test controller::tests::test_aimd_adapts_bucket_rate ... ok
+test controller::tests::test_unlimited_is_noop ... ok
+test device::tests::test_free_space_on_temp_dir ... ok
+test device::tests::test_same_device_trivially_true ... ok
+test error::tests::test_canceled_detection ... ok
+test error::tests::test_error_display_with_path ... ok
+test error::tests::test_from_io_error_has_empty_path ... ok
+test glob::tests::test_character_class ... ok
+test glob::tests::test_double_star_crosses ... ok
+test glob::tests::test_matches_any ... ok
+test glob::tests::test_question_mark_and_literals ... ok
+test glob::tests::test_star_does_not_cross_separator ... ok
+test hash::tests::test_by_name_dispatch ... ok
+test hash::tests::test_crc32c_streaming_and_slice_by8 ... ok
+test hash::tests::test_crc32c_vectors_rfc3720 ... ok
+test hash::tests::test_md5_vectors_rfc1321 ... ok
+test hash::tests::test_sha256_incremental_matches_one_shot ... ok
+test hash::tests::test_sha256_one_million_a ... ok
+test hash::tests::test_sha256_vectors_fips180_4 ... ok
+test hash::tests::test_to_hex ... ok
+test hash::tests::test_xxh64_streaming_matches_one_shot ... ok
+test hash::tests::test_xxh64_vectors ... ok
+test journal::tests::test_record_load_roundtrip_and_latest_wins ... ok
+test journal::tests::test_torn_final_line_is_tolerated ... ok
+test json::tests::test_as_u64_rejects_fraction ... ok
+test json::tests::test_parse_errors_report_position ... ok
+test json::tests::test_parse_roundtrip_object ... ok
+test json::tests::test_quote_escaping ... ok
+test json::tests::test_unicode_escape ... ok
+test lan::client::tests::test_range_reader_reads_exact_window ... ok
+test lan::client::tests::test_send_config_defaults ... ok
+test lan::http::tests::test_client_refuses_huge_content_length ... ok
+test lan::http::tests::test_query_parsing ... ok
+test lan::http::tests::test_server_roundtrip_buffered ... ok
+test lan::http::tests::test_server_streaming_response_and_upload ... ok
+test lan::http::tests::test_url_decode ... ok
+test lan::mdns::tests::test_compression_pointer_decoding ... ok
+test lan::mdns::tests::test_live_announce_browse ... ok
+test lan::mdns::tests::test_local_ip_is_dotted_quad ... ok
+test lan::mdns::tests::test_message_encode_decode_roundtrip ... ok
+test lan::mdns::tests::test_service_names ... ok
+test lan::mdns::tests::test_txt_rdata_roundtrip ... ok
+test lan::protocol::tests::test_fingerprint_is_stable_and_dotted_hex ... ok
+test lan::protocol::tests::test_identity_json_roundtrip ... ok
+test lan::protocol::tests::test_manifest_verdict ... ok
+test lan::protocol::tests::test_mime_for ... ok
+test lan::protocol::tests::test_prepare_upload_roundtrip ... ok
+test lan::protocol::tests::test_upload_session_roundtrip ... ok
+test controller::tests::test_manual_limit_throttles_and_disables_aimd ... ok
+test lan::server::tests::test_loopback_send_receive_all_modes ... ok
+test lan::server::tests::test_reserve_path_dedup_disk_and_concurrent ... ok
+test lan::server::tests::test_v2_receiver_detects_corruption ... ok
+test lan::tests::test_lan_port_matches_localsend ... ok
+test lan::tests::test_secure_name ... ok
+test manifest::tests::test_from_json_rejects_foreign_documents ... ok
+test manifest::tests::test_scan_write_load_verify_roundtrip ... ok
+test manifest::tests::test_verify_reports_missing_and_size_mismatch ... ok
+test options::tests::test_chunk_clamping ... ok
+test options::tests::test_defaults_are_sane ... ok
+test options::tests::test_hash_file_matches_hasher ... ok
+test lan::server::tests::test_prepare_collision_two_files_both_survive ... ok
+test pipeline::tests::test_journal_batching_done_and_cancel ... ok
+test pipeline::tests::test_overwrite_existing_dst_with_clone_falls_through ... ok
+test pipeline::tests::test_source_shrink_fails_loudly ... ok
+test plan::tests::test_exclude_and_single_file_source ... ok
+test plan::tests::test_flatten_collapses_hierarchy ... ok
+test plan::tests::test_include_filter_descends_unmatched_dirs ... ok
+test plan::tests::test_root_files_land_in_destination_root ... ok
+test platform::linux::hole_tests::test_next_hole_multi_extents ... ok
+test platform::linux::tests::test_sparse_scan_on_sparse_file ... ok
+test platform::linux::tests::test_statvfs_free_space ... ok
+test progress::tests::test_event_lines_are_valid_json_objects ... ok
+test progress::tests::test_progress_file_counting_saturates ... ok
+test progress::tests::test_progress_math ... ok
+test progress::tests::test_quotes_inside_paths_are_escaped ... ok
+test resume::tests::test_journal_bounded_probe_stops_early_and_terminates ... ok
+test resume::tests::test_probe_full_and_empty_and_oversized ... ok
+test resume::tests::test_untrusted_full_scan_finds_lowest_bad_chunk ... ok
+test settings::tests::test_malformed_file_is_config_error ... ok
+test settings::tests::test_missing_file_gives_defaults ... ok
+test settings::tests::test_save_load_roundtrip ... ok
+test throttle::tests::test_burst_within_capacity_is_instant ... ok
+test pipeline::tests::test_inline_hash_matches_full_read ... ok
+test throttle::tests::test_set_rate_clamps_tokens ... ok
+test throttle::tests::test_sustained_rate_throttles ... ok
+test throttle::tests::test_chunk_larger_than_capacity_does_not_deadlock ... ok
+
+test result: ok. 89 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.21s
+
+     Running unittests src/main.rs (target/debug/build/ketra-gui/b4f2811d20ec4f9f/out/ketracopy_gui-b4f2811d20ec4f9f)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/build/ketra-md3/5cf4613ecce5dfc9/out/ketra_md3-5cf4613ecce5dfc9)
+
+running 24 tests
+test color::tests::blend_math ... ok
+test color::tests::baseline_scheme_values ... ok
+test color::tests::hex_parse_round_trip ... ok
+test components::tests::scrim_alpha_is_40_percent ... ok
+test components::tests::components_exist_and_scheme_fallback_is_light ... ok
+test elevation::tests::dark_shadows_are_stronger ... ok
+test elevation::tests::level_zero_is_no_shadow_and_clamped ... ok
+test elevation::tests::ramp_is_monotonic ... ok
+test shape::tests::rounding_is_uniform_and_monotonic ... ok
+test shape::tests::token_values ... ok
+test state::tests::disabled_content_is_faint ... ok
+test state::tests::opacities_match_spec ... ok
+test state::tests::hover_layer_on_baseline_primary ... ok
+test tests::test_elevation_monotonic ... ok
+test tests::test_rounding_scale ... ok
+test tests::test_schemes_are_complete ... ok
+test tests::test_state_layers ... ok
+test tests::test_typography_covers_egui_styles ... ok
+test tests::test_version_present ... ok
+test theme::tests::hairline_is_outline_variant ... ok
+test typography::tests::fonts_carry_the_right_family ... ok
+test theme::tests::visuals_from_schemes ... ok
+test typography::tests::md3_type_sizes ... ok
+test typography::tests::style_map_covers_all_egui_slots ... ok
+
+test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests ketra_core
+warning: type `c_int` should have an upper camel case name
+  --> crates/ketra-core/src/platform/linux.rs:30:6
+   |
+30 | type c_int = std::os::raw::c_int;
+   |      ^^^^^ help: convert the identifier to upper camel case: `CInt`
+   |
+   = note: `#[warn(non_camel_case_types)]` (part of `#[warn(nonstandard_style)]`) on by default
+
+warning: type `c_uint` should have an upper camel case name
+  --> crates/ketra-core/src/platform/linux.rs:31:6
+   |
+31 | type c_uint = std::os::raw::c_uint;
+   |      ^^^^^^ help: convert the identifier to upper camel case: `CUint`
+
+warning: type `c_ulong` should have an upper camel case name
+  --> crates/ketra-core/src/platform/linux.rs:32:6
+   |
+32 | type c_ulong = std::os::raw::c_ulong;
+   |      ^^^^^^^ help: convert the identifier to upper camel case: `CUlong`
+
+warning: type `c_char` should have an upper camel case name
+  --> crates/ketra-core/src/platform/linux.rs:33:6
+   |
+33 | type c_char = std::os::raw::c_char;
+   |      ^^^^^^ help: convert the identifier to upper camel case: `CChar`
+
+warning: 4 warnings emitted
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests ketra_md3
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

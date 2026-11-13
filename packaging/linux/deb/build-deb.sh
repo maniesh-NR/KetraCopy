@@ -22,7 +22,7 @@
 # =============================================================================
 set -euo pipefail
 
-VERSION="1.2.0"
+VERSION="1.2.1"
 DEB_ARCH="amd64"
 PACKAGE="ketracopy"
 
@@ -76,8 +76,8 @@ Section: utils
 Priority: optional
 Architecture: $DEB_ARCH
 Depends: libc6 (>= 2.17)
-Maintainer: KetraCopy contributors <ketracopy@example.invalid>
-Homepage: https://example.invalid/ketracopy
+Maintainer: KetraCopy contributors <maniesh-NR@users.noreply.github.com>
+Homepage: https://github.com/maniesh-NR/KetraCopy
 Description: Verified file copy/move tool with pause, resume and SHA-256 manifests
  KetraCopy (ketra) copies and moves files with inline or full SHA-256
  verification, pause/resume journals, speed limits, conflict policies
@@ -93,7 +93,7 @@ printf 'Installed-Size: %s\n' "$INSTALLED_SIZE" >> "$STAGING/DEBIAN/control"
 cat > "$STAGING/usr/share/doc/$PACKAGE/copyright" <<'EOF'
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: KetraCopy
-Source: https://example.invalid/ketracopy
+Source: https://github.com/maniesh-NR/KetraCopy
 
 Files: *
 Copyright: 2026 KetraCopy contributors
