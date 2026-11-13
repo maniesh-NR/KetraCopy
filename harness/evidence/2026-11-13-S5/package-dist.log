@@ -1,0 +1,42 @@
+==> 1. portable bundle + deb (Linux)
+==> assembling /home/z/my-project/download/ketracopy/KetraCopy-portable
+
+Portable dir: /home/z/my-project/download/ketracopy/KetraCopy-portable
+Tarball:      /home/z/my-project/download/ketracopy/dist/ketracopy-1.2.0-portable-linux-x86_64.tar.gz
+dpkg-deb: building package 'ketracopy' in '/home/z/my-project/download/ketracopy/dist/ketracopy_1.2.0_amd64.deb'.
+
+Built: /home/z/my-project/download/ketracopy/dist/ketracopy_1.2.0_amd64.deb
+ new Debian package, version 2.0.
+ size 2703524 bytes: control archive=580 bytes.
+     565 bytes,    14 lines      control
+ Package: ketracopy
+ Version: 1.2.0
+ Section: utils
+ Priority: optional
+ Architecture: amd64
+ Depends: libc6 (>= 2.17)
+ Maintainer: KetraCopy contributors <ketracopy@example.invalid>
+ Homepage: https://example.invalid/ketracopy
+ Description: Verified file copy/move tool with pause, resume and SHA-256 manifests
+==> 2. linux-x86_64/ dir + linux tar.gz
+==> 3. windows zips (x86_64 + i686, CLI + GUI)
+   skip x86_64 (no ketra.exe)
+   skip i686 (no ketra.exe)
+==> 4. macos tar.gz (CLI-only; GUI requires an Apple SDK/Xcode build)
+   skip aarch64 (no binary)
+   skip x86_64 (no binary)
+==> 5. source archives
+==> 6. exec bits + SHA256SUMS.txt
+==> done. dist/ contents:
+total 16628
+drwxr-xr-x  3 z z    4096 Nov 13 10:36 .
+drwxr-xr-x 17 z z    4096 Nov 13 10:36 ..
+-rw-rw-r--  1 z z     691 Nov 13 10:36 SHA256SUMS.txt
+-rwxr-xr-x  1 z z 5191129 Nov  2 14:02 ketracopy-1.0.0-portable-linux-x86_64.tar.gz
+-rw-rw-r--  1 z z 4020591 Nov 13 10:36 ketracopy-1.2.0-linux-x86_64.tar.gz
+-rw-rw-r--  1 z z 4009103 Nov 13 10:36 ketracopy-1.2.0-portable-linux-x86_64.tar.gz
+-rw-rw-r--  1 z z  328333 Nov 13 10:36 ketracopy-1.2.0-src.tar.gz
+-rw-rw-r--  1 z z  407400 Nov 13 10:36 ketracopy-1.2.0-src.zip
+-rwxr-xr-x  1 z z  332952 Nov  2 13:58 ketracopy_1.0.0_amd64.deb
+-rw-r--r--  1 z z 2703524 Nov 13 10:36 ketracopy_1.2.0_amd64.deb
+drwxrwxr-x  2 z z    4096 Nov 13 10:36 linux-x86_64

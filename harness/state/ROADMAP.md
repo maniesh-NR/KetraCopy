@@ -11,7 +11,7 @@
 | S2 | 1.1.1 — interop test campaign (106 checks) + fix sweep | done 2026-11-05 | pre-workflow |
 | S3 | 1.2.0 — performance / stability / memory optimization pass | done 2026-11-05 | pre-workflow |
 | S4 | Harness workflow + GitHub backup infrastructure (owner mandate 2026-11-13) | done 2026-11-13 | n/a (this stage IS the workflow) |
-| S5 | Full re-verification of 1.2.0 — evidence pack (unit / integration / interop / bench / cross-checks) | in progress | — |
+| S5 | Full re-verification of 1.2.0 — evidence pack (unit / integration / interop / bench / cross-checks) | done 2026-11-13 — findings handed to Gate 1: macOS-GUI objc2 break on modern rustc + packaging nits (`../evidence/2026-11-13-S5/README.md`) | — |
 | S6 | **Gate 1** — adversarial consensus: work-so-far + roadmap | pending | requires S5 evidence |
 | S7 | Address Gate-1 findings; rebuild 1.2.0 dist artifacts (Linux + zig cross-builds) + artifact-hash baseline | pending | requires S6 PASSED |
 | S8 | **Gate 2** — release-readiness consensus | pending | requires S7 |
@@ -31,4 +31,7 @@
 ## Stage/gate history
 
 - 2026-11-13 — S4 done: harness bootstrapped, clean history (ADR-0002),
-  first backup pushed to GitHub.
+  first backup pushed to GitHub. Security: the pre-clean remote history
+  (which contained the owner's PAT file) was force-pushed away; remote
+  `v1.1.0` tag + release deleted; **PAT rotation advised** (MEMORY.md
+  "Security incident").

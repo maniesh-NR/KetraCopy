@@ -11,7 +11,8 @@
 - **Version**: 1.2.0 (full history in `CHANGELOG.md`).
 - **Local workspace**: `/home/z/my-project/download/ketracopy`
   (git repo, branch `main`).
-- **GitHub**: `https://github.com/maniesh-NR/ketracopy` (public).
+- **GitHub**: `https://github.com/maniesh-NR/KetraCopy` (public; canonical
+  URL — the lowercase spelling redirects to it).
 - **Governing rules**: `harness/WORKFLOW.md` (owner-mandated: backups end
   every execution plan; adversarial consensus gates between stages).
 - **Progress**: `harness/state/ROADMAP.md` — single source of truth for
@@ -33,6 +34,24 @@
   them. If lost, the owner re-provides the token; then re-run:
   `git config --local credential.helper 'store --file=/home/z/my-project/.secrets/git-credentials'`
   and rewrite the credentials file.
+
+## Security incident (2026-11-13, resolved at the refs level)
+
+- A pre-workflow push (2026-11-05) had published this repo WITH the owner's
+  PAT file in its tree (`upload/Ketracopy github access token for GLM.txt`)
+  plus tool junk, and a `v1.1.0` tag + release pointing into that history.
+- 2026-11-13: the clean 1.2.0 baseline was force-pushed over that history;
+  the remote `v1.1.0` tag and its release (9 assets) were deleted.
+- Dangling commits may remain accessible by SHA on GitHub until purged —
+  **the owner must rotate/regenerate the PAT** (advisory issued 2026-11-13).
+  GitHub push protection also confirmed the token string.
+- **Outer sandbox repo warning**: `/home/z/my-project/.git` is a SECOND,
+  local-only git repo (root = the whole sandbox directory). It contains
+  secrets in its history; its `origin` remote was removed and a pre-push
+  hook now blocks all pushes. NEVER push it or re-add a remote. The public
+  project repo is `download/ketracopy/.git` (root = the workspace itself).
+- Local record of the leaked remote history: branch `archive/remote-pre-clean`
+  in the OUTER sandbox repo.
 
 ## Commands (from the workspace root)
 
@@ -95,6 +114,13 @@
 - The dist packager expects `dist/README.txt` to pre-exist (only used to
   refresh `dist/linux-x86_64/README.txt`); if missing it is skipped —
   track as a packaging nit.
+- **GUI smoke under Xvfb needs `/tmp/xkblibs`** (rootless runtime libs the
+  recycled sandbox lacks): `apt-get download libxkbcommon-x11-0 libxcb-xkb1`
+  → `dpkg -x` both into `/tmp/xkblibs` → symlink
+  `libxkbcommon-x11.so -> libxkbcommon-x11.so.0` and
+  `libxkbcommon.so -> /usr/lib/x86_64-linux-gnu/libxkbcommon.so.0` in
+  `/tmp/xkblibs/usr/lib/x86_64-linux-gnu` (`scripts/test_interop.sh`
+  prepends that path itself). Recreate after every sandbox recycle.
 
 ## Session bootstrap checklist
 
