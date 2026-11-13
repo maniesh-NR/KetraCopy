@@ -16,7 +16,7 @@
 | S7 | Address Gate-1 findings; rebuild release artifacts + hash baseline | done 2026-11-13 — all findings fixed with evidence; **new latent bug found + fixed** (`--conflict overwrite`/GUI overwrite-all EEXIST); version **1.2.1**; Windows+macOS binaries moved to native CI builds (single-producer rule) | done |
 | S8 | **Gate 2** — release-readiness consensus | **PASSED 2026-11-13** (combined panel; all conditions applied pre-tag — see the round-2 record) | done |
 | S9 | **Release v1.2.1** — tag, GitHub release page with packages for all targets (sandbox Linux/src assets + `release.yml` native Windows/macOS builds), release notes + known limitations + all-asset SHA-256 table, topics | **done 2026-11-13** — release LIVE: 9 assets verified (5 sandbox + 4 CI, all hashed), both CI runs green on the release commit; https://github.com/maniesh-NR/KetraCopy/releases/tag/v1.2.1 | — |
-| S10 | **TeraCopy reference study** — owner-directed (2026-11-13) study of the reference product's installers (3.17 + 4.0.5) for local-transfer / verification techniques that can inform a future optimization pass (performance, transfer stability, resource use) | **planned — Gate 3 PASSED 2026-11-13** (PROCEED-WITH-CONDITIONS ×3, zero BLOCK; conditions = binding entry criteria in the gate record) | fresh gate on findings before any S11; that gate schedules or buries S11 per candidate |
+| S10 | **TeraCopy reference study** — owner-directed (2026-11-13) study of the reference product's installers (3.17 + 4.0.5) for local-transfer / verification techniques that can inform a future optimization pass (performance, transfer stability, resource use) | **in progress — plan 1 of ≤2 done 2026-11-13** (Gate 3 PASSED → CLEANROOM disclosure was S10's first commit; Track B: packaging mapped for both versions, full PE inventory for 3.17 via the vendor MSI channel, 4.0.5 PE facts pending owner-rig export per the charter's degradation path; research docs + reproducible tooling committed to `docs/research/` + `scripts/research/`; vendor hashes denylisted in the backup guard; Track-A owner kit delivered in the study doc §4) | plan 2 = findings gate: per-candidate verdicts C1–C8 + tree contamination check; that gate schedules or buries S11 |
 
 ## Scheduled: S10 — TeraCopy reference study (charter)
 
@@ -146,4 +146,15 @@ commit. **Time-box**: S10 completes within ≤ 2 execution plans.
   the never-pushed ROADMAP S9→done edit. Owner directive received: add the
   TeraCopy reference study to the roadmap → drafted as **S10** (ADR-0003,
   plan 02) and submitted to **Gate 3** for adversarial consensus before
-  any execution.
+  any execution. **Gate 3 PASSED** (zero BLOCK) → charter hardened.
+- 2026-11-13 — **S10 plan 1 executed** (plan 03): CLEANROOM.md disclosure
+  amendment landed as S10's first commit (`c138d82`); both target versions
+  acquired from the vendor (3.17 via its CDN artifact, 4.0.5 confirmed =
+  current release) and verified by embedded manifests; the Advanced
+  Installer container mapped head-only XOR obfuscation + protected content
+  streams (NOT circumvented — 3.17 binaries obtained via the vendor's own
+  MSI channel, 4.0.5 deferred to the owner-rig export); Track B inventories
+  + 3.17 PE facts + candidate map C1–C8 in `docs/research/`; six research
+  tools in `scripts/research/`; vendor hashes denylisted in backup.sh.
+  Awaiting: owner-rig Track-A data (kit in the study doc §4) → S10 plan 2
+  (findings gate) schedules or buries S11.

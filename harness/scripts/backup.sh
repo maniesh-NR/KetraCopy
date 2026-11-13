@@ -38,9 +38,13 @@ git add -A
 # harness/reviews/2026-11-13-gate-3-s10-charter.md). Discipline alone has
 # failed this repo before (PAT incident), so this is a MECHANICAL abort:
 # no staged file may look like vendor research material — denylisted
-# extensions OR executable/OLE magic bytes. Layer 2 of 2 (layer 1 =
-# .gitignore). The two TeraCopy installer SHA-256 hashes join the
-# plain-text denylist below at first acquisition (S10).
+# extensions, executable/OLE magic bytes, OR a known vendor-artifact
+# SHA-256 (S10 acquisition, 2026-11-13 — see docs/research/teracopy-
+# reference-study.md §1). Layer 2 of 2 (layer 1 = .gitignore).
+V317_EXE=ac03db52bb68a013d3a8bf4db703ec11976fa1d0aa557eb988e3f926a26656cf
+V405_EXE=22f050b51c80a344cbdaf368c7f6a9266efca4d95b5109d606466906a421ff7e
+V317_MSI=caf5ac31c758788e7df7cf1332afed8d1c367806703fa9338345a90f2f98738a
+VCUR_MSI=255891c95914c4649a61815365526e769e54f311fc709cbba8835bef40095bdc
 GUARD_BAD=""
 shopt -s nocasematch
 while IFS= read -r f; do
@@ -56,6 +60,12 @@ while IFS= read -r f; do
     4d5a|d0cf)
       GUARD_BAD="${GUARD_BAD}
   - $f (executable/OLE magic bytes: ${magic})" ;;
+  esac
+  f_hash="$(sha256sum -- "$f" 2>/dev/null | cut -d' ' -f1 || true)"
+  case "$f_hash" in
+    "$V317_EXE"|"$V405_EXE"|"$V317_MSI"|"$VCUR_MSI")
+      GUARD_BAD="${GUARD_BAD}
+  - $f (known vendor-artifact SHA-256)" ;;
   esac
 done < <(git diff --cached --name-only --diff-filter=ACMR)
 shopt -u nocasematch
