@@ -16,8 +16,106 @@
 | S7 | Address Gate-1 findings; rebuild release artifacts + hash baseline | done 2026-11-13 — all findings fixed with evidence; **new latent bug found + fixed** (`--conflict overwrite`/GUI overwrite-all EEXIST); version **1.2.1**; Windows+macOS binaries moved to native CI builds (single-producer rule) | done |
 | S8 | **Gate 2** — release-readiness consensus | **PASSED 2026-11-13** (combined panel; all conditions applied pre-tag — see the round-2 record) | done |
 | S9 | **Release v1.2.1** — tag, GitHub release page with packages for all targets (sandbox Linux/src assets + `release.yml` native Windows/macOS builds), release notes + known limitations + all-asset SHA-256 table, topics | **done 2026-11-13** — release LIVE: 9 assets verified (5 sandbox + 4 CI, all hashed), both CI runs green on the release commit; https://github.com/maniesh-NR/KetraCopy/releases/tag/v1.2.1 | — |
+| S10 | **TeraCopy reference study** — owner-directed (2026-11-13) study of the reference product's installers (3.17 + 4.0.5) for local-transfer / verification techniques that can inform a future optimization pass (performance, transfer stability, resource use) | **planned — Gate 3 PASSED 2026-11-13** (PROCEED-WITH-CONDITIONS ×3, zero BLOCK; conditions = binding entry criteria in the gate record) | fresh gate on findings before any S11; that gate schedules or buries S11 per candidate |
 
-## Post-1.2.0 roadmap (candidates, not yet scheduled)
+## Scheduled: S10 — TeraCopy reference study (charter)
+
+**Owner directive (2026-11-13, verbatim)**: "Add to roadmap: decompile and
+reverse engineer the install files for teracopy 3.17
+(https://codesector.com/files/teracopy.exe) and teracopy 4.0.5
+(https://codesector.com/files/teracopy4.0.5.exe), to study if there are
+any methods for local file transfer and verification that can be
+incorporated in to this project to improve performance, stability, and
+resource use." Full decision record: `../decisions/ADR-0003`.
+
+**Goal**: extract functional knowledge of the reference product's local
+transfer and verification machinery — I/O strategy and request sizes,
+buffering, async pipeline, verification timing (inline streaming hash vs
+second pass), resume/journal layout, throttle adaptation, memory profile —
+and map it to concrete optimization candidates for a **future** stage
+(S11, deliberately NOT scheduled; exists only if S10 yields adoptable
+findings).
+
+**Method — two tracks**:
+
+- **Track A — dynamic black-box behavioral analysis (primary)**. Install
+  each version on the owner's Windows machine (owner-controlled hardware
+  ONLY — Gate 3 removed the CI-runner option: no vendor downloads,
+  installs or instrumentation in any `.github/workflows` change, no vendor
+  material in CI logs/artifacts) and observe via
+  OS instrumentation only (Process Monitor / ETW / xperf / API traces):
+  I/O request sizes and queue depth, sync vs async I/O, `CopyFileEx`-style
+  OS calls vs manual read/write loops, buffer sizes, verification timing,
+  resume behavior after interruption, adaptive throttle behavior, working
+  set under 1×10 GB and 10 k×1 MB loads, sparse-file handling; compare
+  3.17 vs 4.0.5 (the 4.x rewrite is the interesting delta). **Every
+  scenario co-instruments KetraCopy v1.2.1 on the same rig** — findings
+  carry side-by-side columns and candidates must cite measured deltas,
+  not absolute observations (Gate 3: without our own baseline the study
+  is unadjudicable).
+- **Track B — static inventory (secondary; feasibility pre-flight
+  required)**. Unpack the two installers and record **functional
+  interface facts only**: payload file inventory (names/sizes/versions),
+  PE machine/subsystem/section summary, DLL import lists (API names),
+  version resources — no verbatim vendor copyright/trademark strings, no
+  UI screenshots or captured imagery, no disassembly, no decompiler
+  output, no vendor resources in the repo. Feasibility (Auditor-verified
+  2026-11-13): the sandbox has objdump-with-PE + strings but NO
+  innoextract/7z/7za/wine and no sudo, so S10's first step is a recorded
+  pre-flight — rootless unpacking-tool acquisition (`apt-get download` +
+  `dpkg -x`, the documented xkblibs pattern) or explicit degradation to
+  objdump PE-header/import facts on binaries exported from the owner's
+  Windows rig.
+
+**Clean-room guardrails (binding)**:
+
+1. Vendor installers/binaries live OUTSIDE the repo
+   (`/home/z/my-project/research/` in the sandbox), never committed.
+2. The repo records functional observations only — behavior notes, API
+   names, sizes, timings. No decompiled code, disassembly listings,
+   extracted vendor assets, or vendor binaries.
+3. Any resulting KetraCopy implementation is written from scratch against
+   the functional notes (no translation/adaptation of vendor code).
+4. `docs/CLEANROOM.md` is S10's **first deliverable and first commit** —
+   before any download, unpacking or trace capture. It time-scopes the
+   current absolute claims to ≤ v1.2.1, discloses the two-track
+   methodology (incl. Track B installer unpacking / PE / import analysis),
+   and states the boundary for any deeper private analysis (per guardrail
+   6). Verified by commit order at the findings gate.
+5. Trademark hygiene preserved (no affiliation; no vendor text).
+6. **Provenance labels**: every findings entry is tagged [A] (trace-
+   derived, citing the observing instrumentation) or [B]
+   (inventory-derived); facts not attributable to A or B are excluded
+   from the repo AND from informing any KetraCopy implementation. If the
+   owner performs deeper private analysis, the CLEANROOM amendment
+   discloses it and its output is barred from implementation.
+7. **Mechanical backstop** (implemented 2026-11-13 at Gate 3): raw trace
+   formats and research dirs are gitignored (layer 1); the backup
+   pre-flight aborts on staged files with executable/OLE magic bytes or
+   denylisted extensions (layer 2, tested both ways); the two installer
+   SHA-256 hashes join the denylist at first acquisition. Pure-discipline
+   control is not enough — this repo's own history proves it.
+
+**Deliverables**: `docs/research/teracopy-reference-study.md` (methodology,
+acquisition hashes, Track-A instrumentation checklist),
+`docs/research/teracopy-findings.md` (side-by-side observations: TeraCopy
+vs co-instrumented KetraCopy v1.2.1; findings → candidate → measured
+delta → expected effect → risk), the CLEANROOM.md amendment, and a fresh
+gate record on the findings. Every `docs/research/*` file opens with a
+scope-and-disclaimer header (what this is / is not: no circumvention, no
+vendor assets).
+
+**Entry**: Gate 3 PASSED 2026-11-13 (zero BLOCK; record:
+`../reviews/2026-11-13-gate-3-s10-charter.md`) — the conditions table
+there is binding; items marked "at S10 start" must be resolved before
+the first research commit. **Exit**: the findings gate issues explicit
+per-candidate verdicts — adopt (→ an S11 row is added to the stage table
+with expected effect + benchmark + effort), defer (→ candidates list), or
+reject (→ with reason) — and verifies by tree inspection that no vendor
+binaries, assets, raw traces or decompiler output exist in any S10
+commit. **Time-box**: S10 completes within ≤ 2 execution plans.
+
+## Post-1.2.1 roadmap (candidates, not yet scheduled)
 
 - HTTPS LAN receiver (self-signed certs, strict LocalSend v2 compat) —
   rustls design preserved in `attic/ketra-net`; engine stays std-only via a
@@ -43,3 +141,9 @@
 - **2026-11-13 — KetraCopy v1.2.1 is LIVE.** All owner directives through
   this date are complete; the workflow (backups + adversarial gates) is
   standing infrastructure.
+- 2026-11-13 — snapshot automation deleted the project `.git` a **2nd**
+  time (after backup #6); recovered per MEMORY.md (`b3ef0ed`), including
+  the never-pushed ROADMAP S9→done edit. Owner directive received: add the
+  TeraCopy reference study to the roadmap → drafted as **S10** (ADR-0003,
+  plan 02) and submitted to **Gate 3** for adversarial consensus before
+  any execution.

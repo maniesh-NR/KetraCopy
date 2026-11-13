@@ -132,7 +132,9 @@ exists per `cargo update -p objc2@0.4.1 --dry-run`; macOS GUI deferred).
   `/tmp/xkblibs/usr/lib/x86_64-linux-gnu` (`scripts/test_interop.sh`
   prepends that path itself). Recreate after every sandbox recycle.
 - **The sandbox snapshot automation can DELETE `download/ketracopy/.git`**
-  (happened 2026-11-13 between backups #2 and #3): git commands in the
+  (happened 2026-11-13 between backups #2 and #3, AND AGAIN after backup
+  #6 — 2nd occurrence, recovered identically, see backup `b3ef0ed`;
+  re-check the repo root at every session start): git commands in the
   workspace then silently resolve to the OUTER local-only sandbox repo
   (UUID-message commits appear in `git log`; `origin` vanishes).
   `harness/scripts/backup.sh` now aborts when the repo root is not the

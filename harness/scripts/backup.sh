@@ -33,6 +33,38 @@ if [ "$GIT_ROOT" != "$ROOT" ]; then
 fi
 
 git add -A
+
+# --- Gate 3 vendor-material guard (ADR-0003 guardrail 7; record:
+# harness/reviews/2026-11-13-gate-3-s10-charter.md). Discipline alone has
+# failed this repo before (PAT incident), so this is a MECHANICAL abort:
+# no staged file may look like vendor research material — denylisted
+# extensions OR executable/OLE magic bytes. Layer 2 of 2 (layer 1 =
+# .gitignore). The two TeraCopy installer SHA-256 hashes join the
+# plain-text denylist below at first acquisition (S10).
+GUARD_BAD=""
+shopt -s nocasematch
+while IFS= read -r f; do
+  [ -f "$f" ] || continue
+  case "$f" in
+    *.exe|*.dll|*.msi|*.sys|*.pml|*.etl|*.cab|*.scr|*.com)
+      GUARD_BAD="${GUARD_BAD}
+  - $f (denylisted extension)"
+      continue ;;
+  esac
+  magic="$(od -An -tx1 -N2 -- "$f" 2>/dev/null | tr -d ' \n')"
+  case "$magic" in
+    4d5a|d0cf)
+      GUARD_BAD="${GUARD_BAD}
+  - $f (executable/OLE magic bytes: ${magic})" ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMR)
+shopt -u nocasematch
+if [ -n "$GUARD_BAD" ]; then
+  echo "backup: FATAL — vendor-material guard tripped on staged files:${GUARD_BAD}"
+  echo "backup: that material belongs OUTSIDE the repo (ADR-0003). Unstage/relocate it and retry."
+  exit 1
+fi
+
 if git diff --cached --quiet; then
   echo "backup: nothing to commit"
 else
