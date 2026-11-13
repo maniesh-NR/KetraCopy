@@ -15,7 +15,7 @@
 | S6 | **Gate 1** — adversarial consensus: work-so-far + roadmap | round 1 FAILED (Red Team BLOCK); **round 2 PASSED 2026-11-13** (`../reviews/2026-11-13-gate-1-round-2-and-gate-2.md`) | done |
 | S7 | Address Gate-1 findings; rebuild release artifacts + hash baseline | done 2026-11-13 — all findings fixed with evidence; **new latent bug found + fixed** (`--conflict overwrite`/GUI overwrite-all EEXIST); version **1.2.1**; Windows+macOS binaries moved to native CI builds (single-producer rule) | done |
 | S8 | **Gate 2** — release-readiness consensus | **PASSED 2026-11-13** (combined panel; all conditions applied pre-tag — see the round-2 record) | done |
-| S9 | **Release v1.2.1** — tag, GitHub release page with packages for all targets (sandbox Linux/src assets + `release.yml` native Windows/macOS builds), release notes + known limitations + all-asset SHA-256 table, topics | in progress | — |
+| S9 | **Release v1.2.1** — tag, GitHub release page with packages for all targets (sandbox Linux/src assets + `release.yml` native Windows/macOS builds), release notes + known limitations + all-asset SHA-256 table, topics | **done 2026-11-13** — release LIVE: 9 assets verified (5 sandbox + 4 CI, all hashed), both CI runs green on the release commit; https://github.com/maniesh-NR/KetraCopy/releases/tag/v1.2.1 | — |
 
 ## Post-1.2.0 roadmap (candidates, not yet scheduled)
 
