@@ -19,4 +19,15 @@ e73845c8572a99b815af6aadec9d104f30892fb749be94703fb1b2ccc603d152  ketracopy_1.2.
 
 ## v1.2.1 release — CI-produced assets (hashes appended at release time)
 
-(To be appended from the GitHub release page after `v1.2.1`.)
+Downloaded + hashed from the release page 2026-11-13 (single producer:
+the CI release workflow; sandbox-verified by download + sha256):
+
+```
+d36cb44319608713befe17f32d538257954ae8957f652d94de928064b20c5667  ketracopy-1.2.1-windows-x86_64.zip
+499a49e49e9fabc64eb3f5f649f3d8fafd05f25853d2110eb102b62662677165  ketracopy-1.2.1-windows-i686.zip
+fa1ea441595b4c76b258b85783a963bc27f0301b928da19a30b71d5e77df29c7  ketracopy-1.2.1-macos-x86_64.tar.gz
+249624d3a27a23540324d875e4703a60a6d154bdfc9091f61a59c8b8043ea4a3  ketracopy-1.2.1-macos-aarch64.tar.gz
+```
+
+Release page (9 assets, notes + known limitations + the all-asset SHA-256
+table): https://github.com/maniesh-NR/KetraCopy/releases/tag/v1.2.1

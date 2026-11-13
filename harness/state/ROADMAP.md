@@ -35,3 +35,11 @@
   (which contained the owner's PAT file) was force-pushed away; remote
   `v1.1.0` tag + release deleted; **PAT rotation advised** (MEMORY.md
   "Security incident").
+- 2026-11-13 — S5 done (evidence pack); S6 Gate 1 round 1 FAILED (Red Team
+  BLOCK: LAN filename-collision data loss); S7 fixed all findings + a new
+  latent bug (`--conflict overwrite` EEXIST); S6/S8 Gate round 2 + Gate 2
+  PASSED (zero BLOCK, conditions applied); S9 released v1.2.1 (9 assets,
+  all hashed; both CI runs green).
+- **2026-11-13 — KetraCopy v1.2.1 is LIVE.** All owner directives through
+  this date are complete; the workflow (backups + adversarial gates) is
+  standing infrastructure.

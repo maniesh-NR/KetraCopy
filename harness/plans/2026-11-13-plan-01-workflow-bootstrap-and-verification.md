@@ -33,13 +33,18 @@ workflow (no remote, no tags, no harness/, junk git history).
        smoke fixed via rootless /tmp/xkblibs); win x64/x86 + mac CLI checks
        green; **mac GUI check FAILS — objc2 v0.4.1 vs rustc 1.100 (Gate-1
        finding)**; dist 1.2.0 rebuilt + hashes recorded. **Backup #2.**
-6. [ ] S6 Gate 1: three independent adversarial agents (Red Team /
-       Auditor / Strategist) on work-so-far + roadmap; record consensus
-       in `harness/reviews/`. **Backup #3.**
-7. [ ] (stretch, gated on S6) S7: fix findings, zig cross-builds, rebuild
-       dist, hash baseline. **Backup.**
-8. [ ] (stretch, gated) S8 Gate 2 + S9 release: tag `v1.2.0`, GitHub
-       release with packages for all targets, ATTRIBUTIONS refresh.
+6. [x] S6 Gate 1: round 1 FAILED (Red Team BLOCK — LAN filename-collision
+       data loss; full record in `harness/reviews/`); round 2 (combined
+       with Gate 2) PASSED — zero BLOCK. **Backup #3-#5.**
+7. [x] S7: all findings fixed with regression tests (incl. a NEW latent
+       bug: `--conflict overwrite`/GUI overwrite-all EEXIST); version
+       1.2.1; docs/CI honesty pass; zigbuild abandoned with evidence —
+       Windows/macOS binaries moved to native CI builds (single-producer).
+8. [x] S8 Gate 2 PASSED + conditions applied (real reservation cleanup,
+       cancel-path journal hardening, probe step-back test, ALGORITHMS.md,
+       docs sweep, single-producer enforced, --locked CI, PAT deferral).
+       [x] S9: **v1.2.1 released** — tag + CI green + 9 assets verified +
+       notes/known-limitations/SHA-256 table + topics.
 
 **Final step of this plan (mandatory)**: `bash harness/scripts/backup.sh`
 — every prompt output ends with a backup, event-driven, never on a timer.
