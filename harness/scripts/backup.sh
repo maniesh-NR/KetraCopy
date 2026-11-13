@@ -19,6 +19,19 @@ cd "$ROOT"
 DESC="${1:-incremental backup}"
 TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
+# Guard: the project repo must be rooted at the workspace itself. The
+# sandbox snapshot automation once DELETED download/ketracopy/.git
+# (2026-11-13), which silently redirected backups into the OUTER
+# local-only sandbox repo (whose origin was removed and whose pre-push
+# hook blocks pushes — see MEMORY.md). Abort loudly instead.
+GIT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [ "$GIT_ROOT" != "$ROOT" ]; then
+  echo "backup: FATAL — git repo root is '${GIT_ROOT:-none}', expected '$ROOT'."
+  echo "backup: the project .git was probably deleted again — recover per"
+  echo "backup: harness/state/MEMORY.md ('snapshot automation' note) before committing."
+  exit 1
+fi
+
 git add -A
 if git diff --cached --quiet; then
   echo "backup: nothing to commit"

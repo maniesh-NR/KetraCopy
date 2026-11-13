@@ -124,6 +124,18 @@ exists per `cargo update -p objc2@0.4.1 --dry-run`; macOS GUI deferred).
   `libxkbcommon.so -> /usr/lib/x86_64-linux-gnu/libxkbcommon.so.0` in
   `/tmp/xkblibs/usr/lib/x86_64-linux-gnu` (`scripts/test_interop.sh`
   prepends that path itself). Recreate after every sandbox recycle.
+- **The sandbox snapshot automation can DELETE `download/ketracopy/.git`**
+  (happened 2026-11-13 between backups #2 and #3): git commands in the
+  workspace then silently resolve to the OUTER local-only sandbox repo
+  (UUID-message commits appear in `git log`; `origin` vanishes).
+  `harness/scripts/backup.sh` now aborts when the repo root is not the
+  workspace. Recovery (used 2026-11-13): (1) remove the OUTER repo's origin
+  (`git -C /home/z/my-project remote remove origin`) — it must never have
+  one; (2) `rm -rf .git && git init -b main` in the workspace; (3) restore
+  local config (user.name/email, credential.helper store-file
+  `/home/z/my-project/.secrets/git-credentials`, remote
+  `https://github.com/maniesh-NR/KetraCopy.git`); (4) `git fetch origin &&
+  git reset --mixed origin/main && git add -A && git commit && git push`.
 
 ## Session bootstrap checklist
 
